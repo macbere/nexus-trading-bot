@@ -25,8 +25,8 @@ class BotState:
     start_time:  float = field(default_factory=time.time)
     last_error:  str   = ""
 
-bot_state = BotState()
 
+        self.exchange = build_exchange(self.cfg)
         self.exchange = build_exchange(self.cfg)
 class BotEngine:
     def __init__(self):
