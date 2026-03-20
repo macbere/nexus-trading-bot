@@ -264,6 +264,93 @@ def api_trade_history():
     return []
 
 
+
+@app.route('/api/balance')
+def api_balance():
+    """Get REAL account balance from Bitget"""
+    try:
+        from bot.exchange_factory import build_exchange
+        from bot.config_loader import load_config
+        
+        config = load_config()
+        exchange = build_exchange(config)
+        
+        # Fetch real balance
+        balance = exchange.fetch_balance()
+        
+        usdt_total = balance.get('total', {}).get('USDT', 0)
+        usdt_free = balance.get('free', {}).get('USDT', 0)
+        usdt_used = balance.get('used', {}).get('USDT', 0)
+        
+        logger.info(f"Balance fetched: Total={usdt_total}, Free={usdt_free}, Used={usdt_used}")
+        
+        return {
+            "total": float(usdt_total),
+            "available": float(usdt_free),
+            "in_use": float(usdt_used),
+            "currency": "USDT"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching balance: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return {
+            "total": 0.00,
+            "available": 0.00,
+            "in_use": 0.00,
+            "currency": "USDT",
+            "error": str(e)
+        }
+
+@app.route('/api/analytics')
+def api_analytics():
+    """Get analytics data for charts"""
+    try:
+        # TODO: Fetch from database when we have trades
+        return {
+            "pnl_history": [],
+            "equity_history": [],
+            "wins": 0,
+            "losses": 0,
+            "total_profit": 0.00,
+            "best_trade": 0.00,
+            "worst_trade": 0.00,
+            "avg_win": 0.00,
+            "avg_loss": 0.00,
+            "profit_factor": 0.00,
+            "sharpe_ratio": 0.00,
+            "max_drawdown": 0.00,
+            "total_trades": 0
+        }
+    except Exception as e:
+        logger.error(f"Error fetching analytics: {e}")
+        return {
+            "pnl_history": [],
+            "equity_history": [],
+            "wins": 0,
+            "losses": 0,
+            "total_profit": 0.00,
+            "best_trade": 0.00,
+            "worst_trade": 0.00,
+            "avg_win": 0.00,
+            "avg_loss": 0.00,
+            "profit_factor": 0.00,
+            "sharpe_ratio": 0.00,
+            "max_drawdown": 0.00,
+            "total_trades": 0
+        }
+
+@app.route('/api/trades/history')
+def api_trade_history():
+    """Get trade history"""
+    try:
+        # TODO: Fetch from database
+        return []
+    except Exception as e:
+        logger.error(f"Error fetching trade history: {e}")        return []
+
+
 if __name__ == "__main__":
     # Start self-ping thread
     ping_thread = threading.Thread(target=self_ping_loop, daemon=True)
