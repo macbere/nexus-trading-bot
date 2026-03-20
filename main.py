@@ -261,8 +261,12 @@ def api_analytics():
 @app.route('/api/trades/history')
 def api_trade_history():
     """Get trade history"""
-    return []
-
+    try:
+        # TODO: Fetch from database
+        return []
+    except Exception as e:
+        logger.error(f"Error fetching trade history: {e}")
+        return []
 
 
 @app.route('/api/balance')
@@ -348,6 +352,8 @@ def api_trade_history():
         # TODO: Fetch from database
         return []
     except Exception as e:
+        logger.error(f"Error fetching trade history: {e}")
+        return []
 
 
 if __name__ == "__main__":
