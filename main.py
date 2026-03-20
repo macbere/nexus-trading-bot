@@ -13,6 +13,57 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
+    """Home endpoint"""
+    return {
+        "status": "Trading Bot is Running! 🚀",
+        "endpoints": {
+            "/": "Home",
+            "/status": "Bot status",
+            "/pairs": "Trading pairs info",
+            "/stats": "Bot statistics"
+        }
+    }
+
+@app.route('/status')
+def status():
+    """Bot health check"""
+    return {
+        "status": "healthy",
+        "bot": "running",
+        "timestamp": "active"
+    }
+
+@app.route('/pairs')
+def get_pairs():
+    """Get current trading pairs info"""
+    return {
+        "tracked_pairs": 50,
+        "max_open_positions": 5,
+        "scan_limit": 50,
+        "status": "active",
+        "test_run": "48 hours"
+    }
+
+@app.route('/stats')
+def get_stats():
+    """Get bot statistics"""
+    return {
+        "bot_status": "running",
+        "configuration": {
+            "pairs_scanned": 50,
+            "max_open": 5,
+            "test_run": "48 hours",
+            "ml_enabled": True,
+            "pattern_recognition": True
+        },
+        "performance": {
+            "note": "Check Render logs for live stats"
+        }
+    }
+
+
+@app.route('/')
+def home():
     return "Trading Bot is Running! 🚀"
 
 @app.route('/status')
