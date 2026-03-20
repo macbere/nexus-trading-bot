@@ -78,7 +78,7 @@ class PairTrader:
         try:
                 return False
                 
-            sig = self.strategy.generate_signal(self.exchange)
+        sig = self.strategy.generate_signal(self.exchange)
             if not sig or sig.direction == "FLAT":
                 logger.info(f"[PairTrader] {self.symbol} signal=FLAT - skip")
                 return False
