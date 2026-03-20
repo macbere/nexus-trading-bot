@@ -11,6 +11,13 @@ logger = logging.getLogger(__name__)
 # Flask app for Render
 app = Flask(__name__)
 
+@app.route('/ping')
+def ping():
+    """Lightweight ping for keep-alive"""
+    return {"status": "pong", "timestamp": time.time()}
+
+
+
 @app.route('/')
 def home():
     """Home endpoint"""
