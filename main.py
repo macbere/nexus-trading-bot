@@ -176,6 +176,37 @@ def api_stats():
 
 @app.route('/api/balance')
 def api_balance():
+    """Get REAL account balance from Bitget"""
+    try:
+        from bot.exchange_factory import build_exchange
+        from bot.config_loader import load_config
+        
+        config = load_config()
+        exchange = build_exchange(config)
+        
+        balance = exchange.fetch_balance()
+        usdt_balance = balance.get('total', {}).get('USDT', 0)
+        usdt_free = balance.get('free', {}).get('USDT', 0)
+        usdt_used = balance.get('used', {}).get('USDT', 0)
+        
+        return {
+            "total": float(usdt_balance),
+            "available": float(usdt_free),
+            "in_use": float(usdt_used),
+            "currency": "USDT"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching balance: {e}")
+        return {
+            "total": 0.00,
+            "available": 0.00,
+            "in_use": 0.00,
+            "currency": "USDT",
+            "error": str(e)
+        }
+
+def api_balance():
     """Get account balance"""
     return {
         "total": 24.44,
