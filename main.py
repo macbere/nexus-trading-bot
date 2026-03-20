@@ -269,7 +269,6 @@ def api_trade_history():
         return []
 
 
-@app.route('/api/balance')
 def api_balance():
     """Get REAL account balance from Bitget"""
     try:
@@ -307,7 +306,6 @@ def api_balance():
             "error": str(e)
         }
 
-@app.route('/api/analytics')
 def api_analytics():
     """Get analytics data for charts"""
     try:
@@ -345,7 +343,6 @@ def api_analytics():
             "total_trades": 0
         }
 
-@app.route('/api/trades/history')
 def api_trade_history():
     """Get trade history"""
     try:
