@@ -26,8 +26,6 @@ class BotState:
     last_error:  str   = ""
 
 
-        self.exchange = build_exchange(self.cfg)
-        self.exchange = build_exchange(self.cfg)
 class BotEngine:
     def __init__(self):
         self.cfg        = load_config()
