@@ -1,73 +1,65 @@
-"""
-main.py
-────────────────────────────────────────────────────────────
-Entry point.
-
-Usage
-─────
-  # Run the trading bot only:
-  python main.py
-
-  # Run bot + API server together (dev / single-worker deploy):
-  python main.py --with-api
-
-PythonAnywhere scheduled task command:
-  /home/macbere/.local/bin/python3.10 /home/macbere/trading_bot/main.py
-
-PythonAnywhere web app (WSGI) — point to:
-  /home/macbere/trading_bot/api/app.py  →  app object
-"""
-
-import argparse
-import logging
-import threading
-import sys
+"""Minimal Trading Bot - Get it working first"""
 import os
+import time
+import logging
+from flask import Flask
 
-# ── Ensure logs directory exists ──────────────────────────
-os.makedirs("logs", exist_ok=True)
-
-# ── Logging setup ─────────────────────────────────────────
-logging.basicConfig(
-    level   = logging.INFO,
-    format  = "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler("logs/bot.log", mode="a", encoding="utf-8"),
-    ],
-)
+# Setup logging
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Flask app for Render
+app = Flask(__name__)
 
-def run_bot() -> None:
-    from bot.bot_engine import BotEngine
-    engine = BotEngine()
-    engine.run()
+@app.route('/')
+def home():
+    return "Trading Bot is Running! 🚀"
 
+@app.route('/status')
+def status():
+    return {"status": "healthy", "timestamp": time.time()}
 
-def run_api() -> None:
-    import uvicorn
-    uvicorn.run(
-        "api.app:app",
-        host    = "0.0.0.0",
-        port    = 8000,
-        reload  = False,
-        workers = 1,    # 1 worker = minimal CPU on free tier
-    )
+def run_bot():
+    """Minimal bot loop"""
+    logger.info("✅ Bot starting...")
+    
+    # Load config
+    try:
+        from bot.config_loader import load_config
+        config = load_config()
+        logger.info("✅ Config loaded")
+    except Exception as e:
+        logger.error(f"❌ Config error: {e}")
+        return
+    
+    # Connect to exchange
+    try:
+        from bot.exchange_factory import build_exchange
+        exchange = build_exchange(config)
+        logger.info("✅ Exchange connected")
+    except Exception as e:
+        logger.error(f"❌ Exchange error: {e}")
+        return
+    
+    logger.info("🎉 Bot is running! Waiting for signals...")
+    
+    # Simple loop
+    while True:
+        try:
+            time.sleep(60)
+            logger.info("❤️  Bot alive...")
+        except KeyboardInterrupt:
+            logger.info("👋 Bot shutting down...")
+            break
 
-
+# For Render - run web server and bot
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="HFT Scalper Bot")
-    parser.add_argument(
-        "--with-api",
-        action="store_true",
-        help="Also start the FastAPI server in a background thread",
-    )
-    args = parser.parse_args()
-
-    if args.with_api:
-        api_thread = threading.Thread(target=run_api, daemon=True)
-        api_thread.start()
-        logger.info("[Main] FastAPI server started in background thread on :8000")
-
-    run_bot()
+    import threading
+    
+    # Start bot in background
+    bot_thread = threading.Thread(target=run_bot, daemon=True)
+    bot_thread.start()
+    
+    # Run web server on Render's port
+    port = int(os.environ.get('PORT', 8000))
+    app.run(host='0.0.0.0', port=port)
