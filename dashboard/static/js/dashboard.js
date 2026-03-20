@@ -1,3 +1,194 @@
+
+// Chart instances
+let pnlChart, winRateChart, equityChart;
+
+// Initialize charts after DOM loads
+function initializeCharts() {
+    // P&L Chart
+    const pnlCtx = document.getElementById('pnlChart').getContext('2d');
+    pnlChart = new Chart(pnlCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'P&L ($)',
+                data: [],
+                borderColor: '#00d9a5',
+                backgroundColor: 'rgba(0, 217, 165, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    grid: { color: 'rgba(255,255,255,0.1)' },
+                    ticks: { color: '#b8b8d1' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#b8b8d1' }
+                }
+            }
+        }
+    });
+    
+    // Win Rate Chart
+    const winCtx = document.getElementById('winRateChart').getContext('2d');
+    winRateChart = new Chart(winCtx, {
+        type: 'doughnut',        data: {
+            labels: ['Wins', 'Losses'],
+            datasets: [{
+                data: [0, 0],
+                backgroundColor: ['#00d9a5', '#dc3545'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { position: 'bottom', labels: { color: '#b8b8d1' } }
+            }
+        }
+    });
+    
+    // Equity Chart
+    const equityCtx = document.getElementById('equityChart').getContext('2d');
+    equityChart = new Chart(equityCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Equity ($)',
+                data: [],
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    grid: { color: 'rgba(255,255,255,0.1)' },
+                    ticks: { color: '#b8b8d1' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#b8b8d1' }
+                }
+            }
+        }
+    });}
+
+// Update charts with new data
+function updateCharts(analyticsData) {
+    // Update P&L Chart
+    if (pnlChart && analyticsData.pnl_history) {
+        pnlChart.data.labels = analyticsData.pnl_history.map(p => p.time);
+        pnlChart.data.datasets[0].data = analyticsData.pnl_history.map(p => p.value);
+        pnlChart.update();
+    }
+    
+    // Update Win Rate Chart
+    if (winRateChart) {
+        const wins = analyticsData.wins || 0;
+        const losses = analyticsData.losses || 0;
+        winRateChart.data.datasets[0].data = [wins, losses];
+        winRateChart.update();
+    }
+    
+    // Update Equity Chart
+    if (equityChart && analyticsData.equity_history) {
+        equityChart.data.labels = analyticsData.equity_history.map(e => e.time);
+        equityChart.data.datasets[0].data = analyticsData.equity_history.map(e => e.value);
+        equityChart.update();
+    }
+}
+
+// Update performance statistics
+function updatePerformanceStats(stats) {
+    document.getElementById('totalProfit').textContent = `+$${(stats.total_profit || 0).toFixed(2)}`;
+    document.getElementById('bestTrade').textContent = `+$${(stats.best_trade || 0).toFixed(2)}`;
+    document.getElementById('worstTrade').textContent = `-$${Math.abs(stats.worst_trade || 0).toFixed(2)}`;
+    document.getElementById('avgWinLoss').textContent = `$${(stats.avg_win || 0).toFixed(2)}/$${(stats.avg_loss || 0).toFixed(2)}`;
+    document.getElementById('profitFactor').textContent = (stats.profit_factor || 0).toFixed(2);
+    document.getElementById('sharpeRatio').textContent = (stats.sharpe_ratio || 0).toFixed(2);
+    document.getElementById('maxDrawdown').textContent = `${(stats.max_drawdown || 0).toFixed(2)}%`;
+    document.getElementById('totalTrades').textContent = stats.total_trades || 0;
+}
+
+// Update trade history table
+function updateTradeHistory(trades) {
+    const tbody = document.getElementById('tradeHistoryBody');
+    
+    if (!trades || trades.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="12" class="text-center text-muted py-4">
+                    <i class="bi bi-hourglass-split me-2"></i>No trade history yet...
+                </td>
+            </tr>        `;
+        return;
+    }
+    
+    tbody.innerHTML = trades.map(trade => `
+        <tr>
+            <td><small>${trade.timestamp || 'N/A'}</small></td>
+            <td><strong>${trade.pair}</strong></td>
+            <td><span class="badge ${trade.direction === 'LONG' ? 'badge-long' : 'badge-short'}">${trade.direction}</span></td>
+            <td>$${(trade.entry_price || 0).toFixed(2)}</td>
+            <td>$${(trade.exit_price || 0).toFixed(2)}</td>
+            <td>$${(trade.size || 0).toFixed(2)}</td>
+            <td class="${trade.pnl >= 0 ? 'profit' : 'loss'}">
+                ${trade.pnl >= 0 ? '+' : ''}$${Math.abs(trade.pnl || 0).toFixed(2)}
+            </td>
+            <td class="${trade.pnl_percent >= 0 ? 'profit' : 'loss'}">
+                ${(trade.pnl_percent || 0).toFixed(2)}%
+            </td>
+            <td><small>${formatDuration(trade.duration || 0)}</small></td>
+            <td>${trade.ml_score || 0}%</td>
+            <td><small>${trade.pattern || 'N/A'}</small></td>
+            <td><span class="badge ${trade.pnl >= 0 ? 'bg-success' : 'bg-danger'}">${trade.pnl >= 0 ? 'WIN' : 'LOSS'}</span></td>
+        </tr>
+    `).join('');
+}
+
+// Export trades to CSV
+function exportTrades() {
+    fetch('/api/trades/history')
+        .then(r => r.json())
+        .then(trades => {
+            const csv = [
+                ['Date/Time', 'Pair', 'Direction', 'Entry', 'Exit', 'Size', 'P&L', 'P&L %', 'Duration', 'ML Score', 'Pattern', 'Status'].join(','),
+                ...trades.map(t => [
+                    t.timestamp, t.pair, t.direction, t.entry_price, t.exit_price,
+                    t.size, t.pnl, t.pnl_percent, t.duration, t.ml_score, t.pattern,
+                    t.pnl >= 0 ? 'WIN' : 'LOSS'
+                ].join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `trades_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        });
+}
+
+
 // Dashboard JavaScript - Real-time Updates
 
 let autoRefreshInterval;
@@ -60,9 +251,14 @@ function stopAutoRefresh() {
 
 // Load all dashboard data
 async function loadDashboardData() {
+    // Initialize charts if not already done
+    if (!pnlChart) initializeCharts();
+    
     try {
-        const [stats, trades, balance] = await Promise.all([
+        const [stats, analytics, tradeHistory, trades, balance] = await Promise.all([
             fetch('/api/stats').then(r => r.json()),
+            fetch('/api/analytics').then(r => r.json()),
+            fetch('/api/trades/history').then(r => r.json()),
             fetch('/api/trades/open').then(r => r.json()),
             fetch('/api/balance').then(r => r.json())
         ]);
@@ -70,6 +266,9 @@ async function loadDashboardData() {
         updateOverviewCards(stats, balance);
         updateLiveTrades(trades);
         updateActivityLog(stats.logs || []);
+        updateCharts(analytics);
+        updateTradeHistory(tradeHistory);
+        updatePerformanceStats(stats);
         updateTimestamp();
         
     } catch (error) {
