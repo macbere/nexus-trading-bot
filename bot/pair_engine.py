@@ -81,6 +81,10 @@ class PairTrader:
                 return False
                 
             sig = self.strategy.generate_signal(self.exchange)
+            # Check cooldown
+            if not self._can_trade_symbol(self.symbol):
+                return False
+            
             if not sig or sig.direction == "FLAT":
                 logger.info(f"[PairTrader] {self.symbol} signal=FLAT - skip")
                 return False
