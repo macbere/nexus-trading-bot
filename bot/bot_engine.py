@@ -29,6 +29,7 @@ class BotState:
 class BotEngine:
     def __init__(self):
         self.cfg        = load_config()
+        self.exchange = build_exchange(self.cfg)
         self.pair_engine = PairEngine(self.cfg, self.exchange)
         self.poll_secs  = float(self.cfg.get("BOT_POLL_SECONDS", 30))
         self._stop      = False
