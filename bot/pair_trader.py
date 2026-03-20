@@ -31,7 +31,7 @@ class PairTrader:
                 return False
             
             # Calculate side and quantity
-            side = "buy" if sig.direction == "LONG" else "sell"            qty = self._calc_qty(sig.price)
+            side = "buy" if sig.direction == "LONG" else "sell"
             if not qty or qty <= 0:
                 logger.warning(f"[PairTrader] {self.symbol} qty=0, skipping trade")
                 return False
