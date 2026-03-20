@@ -2,6 +2,7 @@
 import os
 import time
 import logging
+import pandas as pd
 from flask import Flask, render_template, request, jsonify
 
 # Setup logging
