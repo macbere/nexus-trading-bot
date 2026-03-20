@@ -1,0 +1,10 @@
+/home/macbere/.local/lib/python3.13/site-packages/ccxt/static_dependencies/sympy/external/gmpy.py:126: UserWarning: python-flint 0.0.1 is installed but only version 0.6.* will be used by default. Falling back to other ground types. Use SYMPY_GROUND_TYPES=flint to force the use of python-flint.
+  warn(f"python-flint {_flint_version} is installed but only version "
+/home/macbere/.local/lib/python3.13/site-packages/pandas/core/computation/expressions.py:22: UserWarning: Pandas requires version '2.10.2' or newer of 'numexpr' (version '2.10.1' currently installed).
+  from pandas.core.computation.check import NUMEXPR_INSTALLED
+INFO:     Started server process [2649]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+ERROR:    [Errno 98] error while attempting to bind on address ('0.0.0.0', 8080): address already in use
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.

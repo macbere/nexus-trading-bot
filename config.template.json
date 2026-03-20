@@ -1,0 +1,37 @@
+{
+  "_comment": [
+    "SECURITY: chmod 600 this file immediately after creating it.",
+    "Command: chmod 600 /home/macbere/trading_bot/config.json",
+    "NEVER commit this file to Git. It is listed in .gitignore.",
+    "Environment variables override these values if both are set."
+  ],
+
+  "BITGET_API_KEY":      "YOUR_API_KEY_HERE",
+  "BITGET_SECRET":       "YOUR_SECRET_HERE",
+  "BITGET_PASSWORD":     "YOUR_PASSPHRASE_HERE",
+
+  "FASTAPI_SECRET_KEY":  "GENERATE_A_RANDOM_32_CHAR_STRING_HERE",
+  "FASTAPI_ALLOWED_ORIGINS": "https://yourmobileapp.com,http://localhost:3000",
+
+  "PYTHONANYWHERE_PROXY": "http://proxy.server.com:3128",
+
+  "BOT_SANDBOX":         "true",
+  "BOT_SYMBOL":          "BTC/USDT:USDT",
+  "BOT_MARKET_TYPE":     "swap",
+  "BOT_TIMEFRAME":       "1m",
+  "BOT_POLL_SECONDS":    "30",
+  "BOT_CANDLE_LIMIT":    "100",
+
+  "BOT_EMA_FAST":        "9",
+  "BOT_EMA_SLOW":        "21",
+  "BOT_RSI_PERIOD":      "14",
+  "BOT_RSI_OB":          "65",
+  "BOT_RSI_OS":          "35",
+
+  "BOT_RISK_PCT":        "1.0",
+  "BOT_SL_PCT":          "0.5",
+  "BOT_TP_PCT":          "1.0",
+  "BOT_MAX_POS_USD":     "50.0",
+  "BOT_MAX_DAILY_LOSS_USD": "20.0",
+  "BOT_MAX_ERRORS":      "5"
+}

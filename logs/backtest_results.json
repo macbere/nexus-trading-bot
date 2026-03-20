@@ -1,0 +1,572 @@
+{
+  "timestamp": 1773545898.036093,
+  "timeframe": "15m",
+  "candles_used": 500,
+  "results": {
+    "BTC/USDT:USDT": {
+      "EMA": {
+        "symbol": "BTC/USDT:USDT",
+        "strategy": "EMA",
+        "candles_used": 500,
+        "total_trades": 3,
+        "win_rate_pct": 33.3,
+        "total_pnl_pct": 0.81,
+        "best_trade": {
+          "pnl_pct": 3.1704,
+          "direction": "LONG",
+          "reason": "TP"
+        },
+        "worst_trade": {
+          "pnl_pct": -1.5108,
+          "direction": "LONG",
+          "reason": "SL"
+        },
+        "equity_curve": [
+          1.0,
+          1.0317,
+          1.0161,
+          1.0075
+        ],
+        "trades": [
+          {
+            "direction": "LONG",
+            "entry": 69684.5,
+            "exit": 71893.8,
+            "pnl_pct": 3.1704,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 71725.9,
+            "exit": 70642.3,
+            "pnl_pct": -1.5108,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 70789.2,
+            "exit": 71388.4,
+            "pnl_pct": -0.8465,
+            "reason": "OPEN"
+          }
+        ]
+      },
+      "BB": {
+        "symbol": "BTC/USDT:USDT",
+        "strategy": "BB",
+        "candles_used": 500,
+        "total_trades": 4,
+        "win_rate_pct": 50.0,
+        "total_pnl_pct": 0.81,
+        "best_trade": {
+          "pnl_pct": 3.1213,
+          "direction": "SHORT",
+          "reason": "TP"
+        },
+        "worst_trade": {
+          "pnl_pct": -1.5792,
+          "direction": "SHORT",
+          "reason": "SL"
+        },
+        "equity_curve": [
+          1.0,
+          0.9842,
+          0.969,
+          0.9993,
+          1.0073
+        ],
+        "trades": [
+          {
+            "direction": "SHORT",
+            "entry": 70850.8,
+            "exit": 71969.7,
+            "pnl_pct": -1.5792,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 72219.9,
+            "exit": 73335.1,
+            "pnl_pct": -1.5442,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 73460.0,
+            "exit": 71167.1,
+            "pnl_pct": 3.1213,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 70815.3,
+            "exit": 71388.4,
+            "pnl_pct": 0.8093,
+            "reason": "OPEN"
+          }
+        ]
+      },
+      "MULTI": {
+        "symbol": "BTC/USDT:USDT",
+        "strategy": "MULTI",
+        "candles_used": 500,
+        "total_trades": 2,
+        "win_rate_pct": 0.0,
+        "total_pnl_pct": -4.05,
+        "best_trade": {
+          "pnl_pct": -1.9971,
+          "direction": "SHORT",
+          "reason": "SL"
+        },
+        "worst_trade": {
+          "pnl_pct": -2.0541,
+          "direction": "SHORT",
+          "reason": "SL"
+        },
+        "equity_curve": [
+          1.0,
+          0.98,
+          0.9599
+        ],
+        "trades": [
+          {
+            "direction": "SHORT",
+            "entry": 69815.2,
+            "exit": 71209.5,
+            "pnl_pct": -1.9971,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 69647.2,
+            "exit": 71077.8,
+            "pnl_pct": -2.0541,
+            "reason": "SL"
+          }
+        ]
+      }
+    },
+    "ETH/USDT:USDT": {
+      "EMA": {
+        "symbol": "ETH/USDT:USDT",
+        "strategy": "EMA",
+        "candles_used": 500,
+        "total_trades": 6,
+        "win_rate_pct": 50.0,
+        "total_pnl_pct": 3.44,
+        "best_trade": {
+          "pnl_pct": 4.5596,
+          "direction": "LONG",
+          "reason": "TP"
+        },
+        "worst_trade": {
+          "pnl_pct": -2.028,
+          "direction": "LONG",
+          "reason": "SL"
+        },
+        "equity_curve": [
+          1.0,
+          0.9849,
+          0.9659,
+          1.0099,
+          1.0468,
+          1.0256,
+          1.0327
+        ],
+        "trades": [
+          {
+            "direction": "LONG",
+            "entry": 2040.61,
+            "exit": 2009.84,
+            "pnl_pct": -1.5079,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 2023.0,
+            "exit": 2062.06,
+            "pnl_pct": -1.9308,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 2039.0,
+            "exit": 2131.97,
+            "pnl_pct": 4.5596,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 2105.03,
+            "exit": 2181.85,
+            "pnl_pct": 3.6494,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 2150.4,
+            "exit": 2106.79,
+            "pnl_pct": -2.028,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 2112.08,
+            "exit": 2097.36,
+            "pnl_pct": 0.6969,
+            "reason": "OPEN"
+          }
+        ]
+      },
+      "BB": {
+        "symbol": "ETH/USDT:USDT",
+        "strategy": "BB",
+        "candles_used": 500,
+        "total_trades": 4,
+        "win_rate_pct": 50.0,
+        "total_pnl_pct": -2.78,
+        "best_trade": {
+          "pnl_pct": 3.1124,
+          "direction": "SHORT",
+          "reason": "TP"
+        },
+        "worst_trade": {
+          "pnl_pct": -3.5515,
+          "direction": "SHORT",
+          "reason": "SL"
+        },
+        "equity_curve": [
+          1.0,
+          0.9645,
+          0.939,
+          0.9682,
+          0.9711
+        ],
+        "trades": [
+          {
+            "direction": "SHORT",
+            "entry": 2058.85,
+            "exit": 2131.97,
+            "pnl_pct": -3.5515,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 2125.61,
+            "exit": 2181.85,
+            "pnl_pct": -2.6458,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 2187.37,
+            "exit": 2119.29,
+            "pnl_pct": 3.1124,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 2090.97,
+            "exit": 2097.36,
+            "pnl_pct": 0.3056,
+            "reason": "OPEN"
+          }
+        ]
+      },
+      "MULTI": {
+        "symbol": "ETH/USDT:USDT",
+        "strategy": "MULTI",
+        "candles_used": 500,
+        "total_trades": 3,
+        "win_rate_pct": 66.7,
+        "total_pnl_pct": 6.71,
+        "best_trade": {
+          "pnl_pct": 4.2681,
+          "direction": "LONG",
+          "reason": "TP"
+        },
+        "worst_trade": {
+          "pnl_pct": -1.6819,
+          "direction": "SHORT",
+          "reason": "SL"
+        },
+        "equity_curve": [
+          1.0,
+          0.9832,
+          1.0251,
+          1.0674
+        ],
+        "trades": [
+          {
+            "direction": "SHORT",
+            "entry": 2035.77,
+            "exit": 2070.01,
+            "pnl_pct": -1.6819,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 2044.7,
+            "exit": 2131.97,
+            "pnl_pct": 4.2681,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 2095.5,
+            "exit": 2181.85,
+            "pnl_pct": 4.1207,
+            "reason": "TP"
+          }
+        ]
+      }
+    },
+    "SOL/USDT:USDT": {
+      "EMA": {
+        "symbol": "SOL/USDT:USDT",
+        "strategy": "EMA",
+        "candles_used": 500,
+        "total_trades": 10,
+        "win_rate_pct": 50.0,
+        "total_pnl_pct": 5.64,
+        "best_trade": {
+          "pnl_pct": 3.4978,
+          "direction": "LONG",
+          "reason": "TP"
+        },
+        "worst_trade": {
+          "pnl_pct": -1.8629,
+          "direction": "LONG",
+          "reason": "SL"
+        },
+        "equity_curve": [
+          1.0,
+          1.0327,
+          1.0134,
+          0.997,
+          1.0287,
+          1.0113,
+          0.9943,
+          1.0291,
+          1.0608,
+          1.0442,
+          1.055
+        ],
+        "trades": [
+          {
+            "direction": "LONG",
+            "entry": 85.527,
+            "exit": 88.322,
+            "pnl_pct": 3.268,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 87.821,
+            "exit": 86.185,
+            "pnl_pct": -1.8629,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 85.496,
+            "exit": 86.882,
+            "pnl_pct": -1.6211,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 84.925,
+            "exit": 87.625,
+            "pnl_pct": 3.1793,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 87.209,
+            "exit": 85.737,
+            "pnl_pct": -1.6879,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 85.186,
+            "exit": 86.623,
+            "pnl_pct": -1.6869,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 86.683,
+            "exit": 89.715,
+            "pnl_pct": 3.4978,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 89.647,
+            "exit": 92.41,
+            "pnl_pct": 3.0821,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 90.657,
+            "exit": 89.236,
+            "pnl_pct": -1.5674,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 88.848,
+            "exit": 87.924,
+            "pnl_pct": 1.04,
+            "reason": "OPEN"
+          }
+        ]
+      },
+      "BB": {
+        "symbol": "SOL/USDT:USDT",
+        "strategy": "BB",
+        "candles_used": 500,
+        "total_trades": 8,
+        "win_rate_pct": 25.0,
+        "total_pnl_pct": -0.5,
+        "best_trade": {
+          "pnl_pct": 5.3463,
+          "direction": "LONG",
+          "reason": "TP"
+        },
+        "worst_trade": {
+          "pnl_pct": -1.7234,
+          "direction": "LONG",
+          "reason": "SL"
+        },
+        "equity_curve": [
+          1.0,
+          0.9845,
+          0.9684,
+          0.9517,
+          1.0026,
+          0.9865,
+          1.0162,
+          1.0005,
+          0.9925
+        ],
+        "trades": [
+          {
+            "direction": "SHORT",
+            "entry": 87.209,
+            "exit": 88.557,
+            "pnl_pct": -1.5457,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 86.358,
+            "exit": 87.774,
+            "pnl_pct": -1.6397,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 86.632,
+            "exit": 85.139,
+            "pnl_pct": -1.7234,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 85.162,
+            "exit": 89.715,
+            "pnl_pct": 5.3463,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 89.935,
+            "exit": 91.381,
+            "pnl_pct": -1.6078,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 92.013,
+            "exit": 89.236,
+            "pnl_pct": 3.0181,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 88.148,
+            "exit": 86.78,
+            "pnl_pct": -1.5519,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 87.228,
+            "exit": 87.924,
+            "pnl_pct": -0.7979,
+            "reason": "OPEN"
+          }
+        ]
+      },
+      "MULTI": {
+        "symbol": "SOL/USDT:USDT",
+        "strategy": "MULTI",
+        "candles_used": 500,
+        "total_trades": 4,
+        "win_rate_pct": 50.0,
+        "total_pnl_pct": 1.95,
+        "best_trade": {
+          "pnl_pct": 4.8379,
+          "direction": "LONG",
+          "reason": "TP"
+        },
+        "worst_trade": {
+          "pnl_pct": -1.8966,
+          "direction": "SHORT",
+          "reason": "SL"
+        },
+        "equity_curve": [
+          1.0,
+          0.981,
+          0.9657,
+          1.0124,
+          1.0182
+        ],
+        "trades": [
+          {
+            "direction": "SHORT",
+            "entry": 85.994,
+            "exit": 87.625,
+            "pnl_pct": -1.8966,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 85.486,
+            "exit": 86.82,
+            "pnl_pct": -1.5605,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 85.575,
+            "exit": 89.715,
+            "pnl_pct": 4.8379,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 88.429,
+            "exit": 87.924,
+            "pnl_pct": 0.5711,
+            "reason": "OPEN"
+          }
+        ]
+      }
+    }
+  }
+}

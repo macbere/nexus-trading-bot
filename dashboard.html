@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NEXUS Bot Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="refresh" content="60">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+        }
+        .header h1 { font-size: 2.5em; color: #00ff88; }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .card h3 {
+            color: #00ff88;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .value {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .status-online { color: #00ff88; }        .status-offline { color: #ff4444; }
+        .signal-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .signal-table th, .signal-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .signal-table th {
+            color: #00ff88;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85em;
+        }
+        .signal-buy { color: #00ff88; font-weight: bold; }
+        .signal-sell { color: #ff4444; font-weight: bold; }
+        .signal-flat { color: #ffa500; }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00ccff);
+            transition: width 0.5s ease;
+        }
+        .section {
+            margin-top: 20px;
+        }
+        .section h2 {
+            color: #00ff88;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(0,255,136,0.3);
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255,255,255,0.6);
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }        }
+        .pulse { animation: pulse 2s infinite; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚡ NEXUS Trading Bot</h1>
+        <p>Real-Time Dashboard</p>
+    </div>
+
+    <div class="status-grid">
+        <div class="card">
+            <h3>🤖 Bot Status</h3>
+            <div class="value" id="botStatus">Checking...</div>
+        </div>
+        <div class="card">
+            <h3>⏱️ Uptime</h3>
+            <div class="value" id="uptime">--</div>
+        </div>
+        <div class="card">
+            <h3>📊 CPU Usage</h3>
+            <div class="value" id="cpuUsage">--</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="cpuBar" style="width: 0%"></div>
+            </div>
+        </div>
+        <div class="card">
+            <h3>💾 Memory</h3>
+            <div class="value" id="memUsage">--</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>📈 Recent Trading Signals</h2>
+        <div class="card">
+            <div id="signalsContainer">
+                <div class="loading pulse">Loading signals...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🔍 Top Market Pairs (by Volume)</h2>
+        <div class="card">
+            <div id="pairsContainer">
+                <div class="loading pulse">Loading pairs...</div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let startTime = null;
+
+        async function fetchStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                // Bot status
+                const statusEl = document.getElementById('botStatus');
+                if (data.bot_running) {
+                    statusEl.innerHTML = '<span class="status-online">● ONLINE</span>';
+                    if (!startTime) startTime = Date.now();
+                    const uptime = Math.floor((Date.now() - startTime) / 1000);
+                    const hours = Math.floor(uptime / 3600);
+                    const mins = Math.floor((uptime % 3600) / 60);
+                    const secs = uptime % 60;
+                    document.getElementById('uptime').textContent = 
+                        `${hours}h ${mins}m ${secs}s`;
+                } else {
+                    statusEl.innerHTML = '<span class="status-offline">● OFFLINE</span>';
+                    document.getElementById('uptime').textContent = '--';
+                }
+                
+                // CPU & Memory
+                document.getElementById('cpuUsage').textContent = data.cpu_usage + '%';
+                document.getElementById('cpuBar').style.width = data.cpu_usage + '%';
+                document.getElementById('memUsage').textContent = data.memory_usage + '%';
+                
+            } catch (error) {
+                console.error('Status fetch error:', error);
+                document.getElementById('botStatus').innerHTML = 
+                    '<span class="status-offline">● ERROR</span>';
+            }
+        }
+
+        async function fetchSignals() {
+            try {
+                const response = await fetch('/api/signals');
+                const data = await response.json();
+                
+                const container = document.getElementById('signalsContainer');
+                
+                if (data.signals && data.signals.length > 0) {
+                    let html = '<table class="signal-table">';
+                    html += '<thead><tr><th>Time</th><th>Symbol</th><th>Side</th><th>Type</th></tr></thead>';
+                    html += '<tbody>';
+                    
+                    // Show last 10 signals
+                    const recentSignals = data.signals.slice(-10).reverse();                    recentSignals.forEach(signal => {
+                        const time = new Date(signal.timestamp).toLocaleTimeString();
+                        const sideClass = signal.side === 'buy' ? 'signal-buy' : 
+                                        signal.side === 'sell' ? 'signal-sell' : 'signal-flat';
+                        html += `<tr>
+                            <td>${time}</td>
+                            <td>${signal.symbol || 'N/A'}</td>
+                            <td class="${sideClass}">${signal.side ? signal.side.toUpperCase() : 'FLAT'}</td>
+                            <td>${signal.type || 'SIGNAL'}</td>
+                        </tr>`;
+                    });
+                    
+                    html += '</tbody></table>';
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<div class="loading">No signals yet. Waiting for trades...</div>';
+                }
+                
+            } catch (error) {
+                console.error('Signals fetch error:', error);
+            }
+        }
+
+        async function fetchPairs() {
+            try {
+                const response = await fetch('/api/scan');
+                const data = await response.json();
+                
+                const container = document.getElementById('pairsContainer');
+                
+                if (data.pairs && data.pairs.length > 0) {
+                    let html = '<table class="signal-table">';
+                    html += '<thead><tr><th>#</th><th>Pair</th><th>Volume Rank</th></tr></thead>';
+                    html += '<tbody>';
+                    
+                    data.pairs.forEach((pair, index) => {
+                        html += `<tr>
+                            <td>${index + 1}</td>
+                            <td>${pair}</td>
+                            <td>Top ${index + 1}</td>
+                        </tr>`;
+                    });
+                    
+                    html += '</tbody></table>';
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<div class="loading">Waiting for market scan...</div>';
+                }
+                
+            } catch (error) {                console.error('Pairs fetch error:', error);
+            }
+        }
+
+        // Initial fetch
+        fetchStatus();
+        fetchSignals();
+        fetchPairs();
+
+        // Auto-refresh every 5 seconds
+        setInterval(() => {
+            fetchStatus();
+            fetchSignals();
+            fetchPairs();
+        }, 5000);
+    </script>
+</body>
+</html>

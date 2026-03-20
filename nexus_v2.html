@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEXUS Trading Bot</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+:root{--bg:#0a0e1a;--card:#111827;--accent:#00ff88;--danger:#ff4757;--warn:#ffa502;--muted:#6b7280;--text:#e5e7eb;--border:#1f2937}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;min-height:100vh}
+.navbar-brand{color:var(--accent)!important;font-weight:900;letter-spacing:3px;font-size:1.3rem}
+.nav-link{color:var(--muted)!important;font-size:.75rem;letter-spacing:1px;text-transform:uppercase;padding:.5rem .75rem!important}
+.nav-link.active{color:var(--accent)!important;border-bottom:2px solid var(--accent)}
+.navbar{background:var(--card)!important;border-bottom:1px solid var(--border)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px}
+.card-label{font-size:.65rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+.metric-val{font-size:1.8rem;font-weight:700;font-family:monospace;color:var(--accent)}
+.metric-sm{font-size:1.1rem;font-weight:700;font-family:monospace}
+.badge-live{background:var(--accent);color:#000;font-size:.65rem;padding:2px 8px;border-radius:10px;animation:pulse 2s infinite}
+.badge-stop{background:var(--danger);color:#fff;font-size:.65rem;padding:2px 8px;border-radius:10px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.btn-nexus{background:var(--accent);color:#000;font-weight:700;letter-spacing:1px;border:none}
+.btn-nexus:hover{background:#00cc6a;color:#000}
+.btn-danger-nexus{background:var(--danger);color:#fff;font-weight:700;border:none}
+.table-dark{--bs-table-bg:var(--card);--bs-table-border-color:var(--border);font-size:.8rem}
+.form-control,select.form-select{background:var(--bg)!important;border-color:var(--border)!important;color:var(--text)!important}
+.form-control:focus,select.form-select:focus{border-color:var(--accent)!important;box-shadow:0 0 0 2px rgba(0,255,136,.2)!important}
+.form-label{font-size:.75rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.page{display:none}.page.active{display:block}
+.stat-card{border-left:3px solid var(--accent)}
+.stat-card.danger{border-left-color:var(--danger)}
+.stat-card.warn{border-left-color:var(--warn)}
+.pos-long{color:var(--accent)}.pos-short{color:var(--danger)}
+.slider-nexus{accent-color:var(--accent)}
+canvas{max-width:100%}
+.section-hdr{font-size:.7rem;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg sticky-top px-3">
+  <span class="navbar-brand">⚡ NEXUS</span>
+  <button class="navbar-toggler border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#navTabs">
+    <span class="navbar-toggler-icon" style="filter:invert(1)"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navTabs">
+    <ul class="navbar-nav ms-auto" id="mainNav">
+      <li class="nav-item"><a class="nav-link active" onclick="showPage('live')" href="#">📡 LIVE</a></li>
+      <li class="nav-item"><a class="nav-link" onclick="showPage('pnl')" href="#">💰 P&amp;L</a></li>
+      <li class="nav-item"><a class="nav-link" onclick="showPage('trades')" href="#">📋 TRADES</a></li>
+      <li class="nav-item"><a class="nav-link" onclick="showPage('brain')" href="#">🧠 BRAIN</a></li>
+      <li class="nav-item"><a class="nav-link" onclick="showPage('backtest')" href="#">📊 BACKTEST</a></li>
+      <li class="nav-item"><a class="nav-link" onclick="showPage('control')" href="#">⚙️ CONTROL</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container-fluid px-3 py-3">
+
+<!-- ═══════════════════ LIVE PAGE ═══════════════════ -->
+<div class="page active" id="page-live">
+  <div class="section-hdr">Live Status</div>
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-md-3">
+      <div class="card p-3 stat-card">
+        <div class="card-label">Bot Status</div>
+        <div id="live-status"><span class="badge-stop" id="bot-status-badge">CHECKING...</span></div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card p-3 stat-card">
+        <div class="card-label">Uptime</div>
+        <div class="metric-sm" id="live-uptime">--</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card p-3 stat-card">
+        <div class="card-label">Tick Count</div>
+        <div class="metric-sm" id="live-ticks">--</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card p-3 stat-card">
+        <div class="card-label">Last Error</div>
+        <div style="font-size:.75rem;color:var(--danger)" id="live-error">None</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-12 col-md-6">
+      <div class="card p-3">
+        <div class="section-hdr">Last Signal</div>
+        <div class="row g-2" id="live-signal">
+          <div class="col-4"><div class="card-label">Direction</div><div class="metric-sm" id="sig-dir">--</div></div>
+          <div class="col-4"><div class="card-label">Symbol</div><div class="metric-sm" id="sig-sym">--</div></div>
+          <div class="col-4"><div class="card-label">Price</div><div class="metric-sm" id="sig-price">--</div></div>
+          <div class="col-4"><div class="card-label">RSI</div><div class="metric-sm" id="sig-rsi">--</div></div>
+          <div class="col-4"><div class="card-label">EMA Fast</div><div class="metric-sm" id="sig-emaf">--</div></div>
+          <div class="col-4"><div class="card-label">EMA Slow</div><div class="metric-sm" id="sig-emas">--</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-6">
+      <div class="card p-3">
+        <div class="section-hdr">Open Positions</div>
+        <div id="live-positions"><div class="text-center text-muted py-3" style="font-size:.8rem">No open positions</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card p-3">
+    <div class="section-hdr">Scanner — Top Pairs</div>
+    <div id="live-scanner"><div class="text-center text-muted py-3" style="font-size:.8rem">Loading scanner...</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ P&L PAGE ═══════════════════ -->
+<div class="page" id="page-pnl">
+  <div class="section-hdr">Balance & P&L</div>
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-md-3">
+      <div class="card p-3 stat-card">
+        <div class="card-label">Total Balance</div>
+        <div class="metric-val" id="pnl-total">--</div>
+        <div style="font-size:.7rem;color:var(--muted)">USDT</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card p-3 stat-card">
+        <div class="card-label">Available</div>
+        <div class="metric-val" id="pnl-free">--</div>
+        <div style="font-size:.7rem;color:var(--muted)">USDT</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card p-3 stat-card warn">
+        <div class="card-label">In Use</div>
+        <div class="metric-val" style="color:var(--warn)" id="pnl-used">--</div>
+        <div style="font-size:.7rem;color:var(--muted)">USDT</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card p-3 stat-card" id="pnl-unrealized-card">
+        <div class="card-label">Unrealized P&L</div>
+        <div class="metric-val" id="pnl-unrealized">--</div>
+        <div style="font-size:.7rem;color:var(--muted)">USDT</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card p-3 mb-3">
+    <div class="section-hdr">All Open Positions</div>
+    <div class="table-responsive">
+      <table class="table table-dark table-sm align-middle mb-0">
+        <thead><tr>
+          <th>Pair</th><th>Side</th><th>Size</th>
+          <th>Entry</th><th>Mark</th><th>ROE%</th><th>PnL</th>
+        </tr></thead>
+        <tbody id="pnl-positions-table"><tr><td colspan="7" class="text-center text-muted">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card p-3">
+    <div class="section-hdr">Trade Statistics</div>
+    <div class="row g-3" id="pnl-stats">
+      <div class="col-4 col-md-2"><div class="card-label">Total Trades</div><div class="metric-sm" id="stat-total">--</div></div>
+      <div class="col-4 col-md-2"><div class="card-label">Win Rate</div><div class="metric-sm" id="stat-wr">--</div></div>
+      <div class="col-4 col-md-2"><div class="card-label">Avg Win</div><div class="metric-sm pos-long" id="stat-aw">--</div></div>
+      <div class="col-4 col-md-2"><div class="card-label">Avg Loss</div><div class="metric-sm pos-short" id="stat-al">--</div></div>
+      <div class="col-4 col-md-2"><div class="card-label">Total PnL</div><div class="metric-sm" id="stat-pnl">--</div></div>
+      <div class="col-4 col-md-2"><div class="card-label">Winners/Losers</div><div class="metric-sm" id="stat-wl">--</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ TRADES PAGE ═══════════════════ -->
+<div class="page" id="page-trades">
+  <div class="section-hdr">Trade Execution</div>
+
+  <!-- Manual Trade Form -->
+  <div class="card p-3 mb-3">
+    <div class="section-hdr">Manual Trade</div>
+    <div class="row g-2">
+      <div class="col-6 col-md-3">
+        <label class="form-label">Pair</label>
+        <input class="form-control form-control-sm" id="mt-pair" value="BTC/USDT:USDT" placeholder="BTC/USDT:USDT">
+      </div>
+      <div class="col-6 col-md-3">
+        <label class="form-label">Side</label>
+        <select class="form-select form-select-sm" id="mt-side">
+          <option value="buy">BUY / LONG</option>
+          <option value="sell">SELL / SHORT</option>
+        </select>
+      </div>
+      <div class="col-6 col-md-3">
+        <label class="form-label">Quantity (USDT)</label>
+        <input class="form-control form-control-sm" id="mt-qty" type="number" value="6" min="5">
+      </div>
+      <div class="col-6 col-md-3">
+        <label class="form-label">Order Type</label>
+        <select class="form-select form-select-sm" id="mt-type">
+          <option value="market">Market</option>
+          <option value="limit">Limit</option>
+        </select>
+      </div>
+    </div>
+    <div class="row g-2 mt-1">
+      <div class="col-6 col-md-3" id="mt-price-wrap" style="display:none">
+        <label class="form-label">Limit Price</label>
+        <input class="form-control form-control-sm" id="mt-price" type="number" placeholder="0.00">
+      </div>
+      <div class="col-12 col-md-3 d-flex align-items-end">
+        <button class="btn btn-nexus w-100 btn-sm" onclick="placeManualTrade()">▶ PLACE ORDER</button>
+      </div>
+      <div class="col-12"><div id="mt-result" style="font-size:.8rem;margin-top:4px"></div></div>
+    </div>
+  </div>
+
+  <!-- Ongoing Positions -->
+  <div class="card p-3 mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="section-hdr mb-0">Ongoing Positions</div>
+      <button class="btn btn-sm btn-outline-secondary" style="font-size:.7rem" onclick="loadPositions()">↻ Refresh</button>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-dark table-sm align-middle mb-0">
+        <thead><tr><th>Pair</th><th>Side</th><th>Size</th><th>Entry</th><th>ROE%</th><th>PnL</th><th>Action</th></tr></thead>
+        <tbody id="ongoing-table"><tr><td colspan="7" class="text-center text-muted">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Completed Trades -->
+  <div class="card p-3">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="section-hdr mb-0">Completed Trades</div>
+      <select class="form-select form-select-sm w-auto" id="trade-period" onchange="loadCompletedTrades()" style="font-size:.7rem">
+        <option value="24">Last 24h</option>
+        <option value="168">Last 7 days</option>
+        <option value="720">Last 30 days</option>
+        <option value="">All Time</option>
+      </select>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-dark table-sm align-middle mb-0">
+        <thead><tr><th>Time</th><th>Pair</th><th>Dir</th><th>Entry</th><th>Exit</th><th>PnL</th><th>Reason</th></tr></thead>
+        <tbody id="completed-table"><tr><td colspan="7" class="text-center text-muted">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ BRAIN PAGE ═══════════════════ -->
+<div class="page" id="page-brain">
+  <div class="section-hdr">Nexus Brain — AI Analytics</div>
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-md-2"><div class="card p-3 stat-card"><div class="card-label">Total Trades</div><div class="metric-val" id="br-trades">--</div></div></div>
+    <div class="col-6 col-md-2"><div class="card p-3 stat-card"><div class="card-label">Win Rate</div><div class="metric-val" id="br-wr">--%</div></div></div>
+    <div class="col-6 col-md-2"><div class="card p-3 stat-card"><div class="card-label">Avg Win</div><div class="metric-val pos-long" id="br-aw">--</div></div></div>
+    <div class="col-6 col-md-2"><div class="card p-3 stat-card danger"><div class="card-label">Avg Loss</div><div class="metric-val pos-short" id="br-al">--</div></div></div>
+    <div class="col-6 col-md-2"><div class="card p-3 stat-card"><div class="card-label">Total PnL</div><div class="metric-val" id="br-pnl">--</div></div></div>
+    <div class="col-6 col-md-2"><div class="card p-3 stat-card warn"><div class="card-label">Last Analysis</div><div style="font-size:.7rem;color:var(--warn)" id="br-time">--</div></div></div>
+  </div>
+  <div class="card p-3 mb-3" id="br-alerts-card">
+    <div class="section-hdr">Brain Alerts</div>
+    <div id="br-alerts"><div class="text-muted" style="font-size:.8rem">Analyzing...</div></div>
+  </div>
+  <div class="card p-3">
+    <div class="section-hdr">Adaptation Status</div>
+    <div id="br-adapt" class="mb-3" style="font-size:.85rem"></div>
+    <button class="btn btn-nexus btn-sm" onclick="runBrainAnalysis()">🧠 Run Analysis Now</button>
+    <div id="br-result" style="font-size:.8rem;margin-top:8px"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ BACKTEST PAGE ═══════════════════ -->
+<div class="page" id="page-backtest">
+  <div class="section-hdr">Backtest Engine</div>
+  <div class="card p-3 mb-3">
+    <div class="row g-2 align-items-end">
+      <div class="col-6 col-md-3">
+        <label class="form-label">Timeframe</label>
+        <select class="form-select form-select-sm" id="bt-tf">
+          <option value="15m">15 Minutes</option>
+          <option value="1h" selected>1 Hour</option>
+          <option value="4h">4 Hours</option>
+        </select>
+      </div>
+      <div class="col-6 col-md-3">
+        <label class="form-label">Candles</label>
+        <select class="form-select form-select-sm" id="bt-limit">
+          <option value="200">200</option>
+          <option value="300" selected>300</option>
+          <option value="500">500</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label">Symbols (comma separated)</label>
+        <input class="form-control form-control-sm" id="bt-symbols" value="BTC/USDT:USDT,ETH/USDT:USDT,SOL/USDT:USDT">
+      </div>
+      <div class="col-12 col-md-2">
+        <button class="btn btn-nexus btn-sm w-100" onclick="runBacktest()">▶ RUN</button>
+      </div>
+    </div>
+    <div id="bt-status" class="text-center mt-2" style="font-size:.75rem;color:var(--warn)"></div>
+  </div>
+  <div id="bt-results"></div>
+</div>
+
+<!-- ═══════════════════ CONTROL PAGE ═══════════════════ -->
+<div class="page" id="page-control">
+  <div class="section-hdr">Admin Control Center</div>
+
+  <!-- Master Switch -->
+  <div class="card p-3 mb-3">
+    <div class="section-hdr">Master Control</div>
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+      <button class="btn btn-nexus" id="btn-start" onclick="botControl('resume')">▶ START BOT</button>
+      <button class="btn btn-danger-nexus" id="btn-stop" onclick="botControl('stop')">⏹ STOP BOT</button>
+      <span id="ctrl-status" style="font-size:.8rem;color:var(--muted)">Status unknown</span>
+    </div>
+  </div>
+
+  <!-- ROE Settings -->
+  <div class="card p-3 mb-3">
+    <div class="section-hdr">ROE Targets</div>
+    <div class="row g-3">
+      <div class="col-6">
+        <label class="form-label">Target ROE % (Take Profit)</label>
+        <input type="range" class="form-range slider-nexus" id="roe-tp" min="5" max="100" step="5" value="20" oninput="document.getElementById('roe-tp-val').textContent=this.value+'%'">
+        <div class="text-center" style="font-size:.8rem;color:var(--accent)" id="roe-tp-val">20%</div>
+      </div>
+      <div class="col-6">
+        <label class="form-label">Stop Loss ROE %</label>
+        <input type="range" class="form-range slider-nexus" id="roe-sl" min="5" max="50" step="5" value="20" oninput="document.getElementById('roe-sl-val').textContent=this.value+'%'">
+        <div class="text-center" style="font-size:.8rem;color:var(--danger)" id="roe-sl-val">20%</div>
+      </div>
+      <div class="col-12">
+        <button class="btn btn-nexus btn-sm" onclick="saveROE()">💾 Save ROE Settings</button>
+        <span id="roe-result" style="font-size:.8rem;margin-left:8px"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trade Settings -->
+  <div class="card p-3 mb-3">
+    <div class="section-hdr">Trade Settings</div>
+    <div class="row g-3">
+      <div class="col-6 col-md-3">
+        <label class="form-label">Max Concurrent Trades</label>
+        <input type="number" class="form-control form-control-sm" id="cfg-maxtrades" min="1" max="10" value="3">
+      </div>
+      <div class="col-6 col-md-3">
+        <label class="form-label">Poll Interval</label>
+        <select class="form-select form-select-sm" id="cfg-poll">
+          <option value="60">60 seconds</option>
+          <option value="120">2 minutes</option>
+          <option value="300">5 minutes</option>
+          <option value="600">10 minutes</option>
+          <option value="1800">30 minutes</option>
+          <option value="3600">1 hour</option>
+        </select>
+      </div>
+      <div class="col-6 col-md-3">
+        <label class="form-label">Risk Per Trade %</label>
+        <input type="number" class="form-control form-control-sm" id="cfg-risk" min="1" max="100" value="30">
+      </div>
+      <div class="col-6 col-md-3">
+        <label class="form-label">Max Position USD</label>
+        <input type="number" class="form-control form-control-sm" id="cfg-maxpos" min="5" value="6">
+      </div>
+      <div class="col-12">
+        <button class="btn btn-nexus btn-sm" onclick="saveConfig()">💾 Save Trade Settings</button>
+        <span id="cfg-result" style="font-size:.8rem;margin-left:8px"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Current Config Display -->
+  <div class="card p-3">
+    <div class="section-hdr">Current Configuration</div>
+    <pre id="cfg-display" style="font-size:.7rem;color:var(--muted);white-space:pre-wrap">Loading...</pre>
+  </div>
+</div>
+
+</div><!-- end container -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API_KEY=localStorage.getItem('nexus_key')||prompt('Enter API Key:')||'';
+if(API_KEY)localStorage.setItem('nexus_key',API_KEY);
+
+function h(url,method='GET',body=null){
+  const opts={method,headers:{'X-API-Key':API_KEY,'Content-Type':'application/json'}};
+  if(body)opts.body=JSON.stringify(body);
+  return fetch(url,opts).then(r=>r.json()).catch(e=>({error:e.toString()}));
+}
+
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(n=>{if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+name+"'"))n.classList.add('active')});
+  if(name==='live'){loadLive();}
+  if(name==='pnl'){loadPnL();}
+  if(name==='trades'){loadPositions();loadCompletedTrades();}
+  if(name==='brain'){loadBrain();}
+  if(name==='backtest'){loadBacktest();}
+  if(name==='control'){loadConfig();}
+}
+
+// ── LIVE ──────────────────────────────────────────────────────────────────
+async function loadLive(){
+  const d=await h('/status');
+  if(d.error)return;
+  document.getElementById('live-status').innerHTML=d.running?'<span class="badge-live">🟢 RUNNING</span>':'<span class="badge-stop">🔴 STOPPED</span>';
+  document.getElementById('live-uptime').textContent=d.uptime_s?fmtTime(d.uptime_s):'--';
+  document.getElementById('live-ticks').textContent=d.tick_count||'--';
+  document.getElementById('live-error').textContent=d.last_error||'None';
+  const s=d.last_signal;
+  if(s){
+    document.getElementById('sig-dir').textContent=s.direction||'--';
+    document.getElementById('sig-dir').className='metric-sm '+(s.direction==='LONG'?'pos-long':s.direction==='SHORT'?'pos-short':'');
+    document.getElementById('sig-sym').textContent=s.symbol||'--';
+    document.getElementById('sig-price').textContent=s.price?parseFloat(s.price).toFixed(4):'--';
+    document.getElementById('sig-rsi').textContent=s.rsi?parseFloat(s.rsi).toFixed(1):'--';
+    document.getElementById('sig-emaf').textContent=s.ema_fast?parseFloat(s.ema_fast).toFixed(4):'--';
+    document.getElementById('sig-emas').textContent=s.ema_slow?parseFloat(s.ema_slow).toFixed(4):'--';
+  }
+  const pos=await h('/positions');
+  const posEl=document.getElementById('live-positions');
+  if(!pos||!pos.length){posEl.innerHTML='<div class="text-center text-muted py-2" style="font-size:.8rem">No open positions</div>';return;}
+  posEl.innerHTML=pos.map(p=>{
+    const roe=parseFloat(p.roe||0);
+    const roeColor=roe>=0?'var(--accent)':'var(--danger)';
+    return`<div class="d-flex justify-content-between align-items-center py-1 border-bottom border-secondary">
+      <span style="font-size:.8rem;font-weight:700">${p.symbol||'--'}</span>
+      <span class="${(p.side||'').toLowerCase()==='long'?'pos-long':'pos-short'}" style="font-size:.75rem">${(p.side||'').toUpperCase()}</span>
+      <span style="color:${roeColor};font-family:monospace;font-size:.85rem">${roe>=0?'+':''}${roe.toFixed(2)}%</span>
+      <span style="font-size:.75rem;color:var(--muted)">${parseFloat(p.contracts||0)} lots</span>
+    </div>`;
+  }).join('');
+  loadScanner();
+}
+
+async function loadScanner(){
+  const d=await h('/scanner');
+  if(!d||d.error)return;
+  const el=document.getElementById('live-scanner');
+  const pairs=d.top_pairs||[];
+  if(!pairs.length){el.innerHTML='<div class="text-center text-muted" style="font-size:.8rem">No scanner data</div>';return;}
+  el.innerHTML=`<div class="row g-2">${pairs.map((p,i)=>`<div class="col-4 col-md-2"><div class="card p-2 text-center"><div style="font-size:.65rem;color:var(--muted)">#${i+1}</div><div style="font-size:.75rem;font-weight:700">${p.replace('/USDT:USDT','')}</div></div></div>`).join('')}</div>`;
+}
+
+// ── P&L ──────────────────────────────────────────────────────────────────
+async function loadPnL(){
+  const pos=await h('/positions');
+  let totalUnreal=0;
+  if(pos&&pos.length){
+    const rows=pos.map(p=>{
+      const roe=parseFloat(p.roe||p.unrealizedPnl||0);
+      const pnl=parseFloat(p.unrealizedPnl||0);
+      totalUnreal+=pnl;
+      const side=(p.side||'').toLowerCase();
+      return`<tr>
+        <td>${p.symbol||'--'}</td>
+        <td class="${side==='long'?'pos-long':'pos-short'}">${side.toUpperCase()}</td>
+        <td>${parseFloat(p.contracts||0)}</td>
+        <td>${parseFloat(p.entryPrice||0).toFixed(4)}</td>
+        <td>${parseFloat(p.markPrice||0).toFixed(4)}</td>
+        <td style="color:${roe>=0?'var(--accent)':'var(--danger)'}">${roe>=0?'+':''}${roe.toFixed(2)}%</td>
+        <td style="color:${pnl>=0?'var(--accent)':'var(--danger)'}">${pnl>=0?'+':''}$${pnl.toFixed(4)}</td>
+      </tr>`;
+    });
+    document.getElementById('pnl-positions-table').innerHTML=rows.join('');
+  }else{
+    document.getElementById('pnl-positions-table').innerHTML='<tr><td colspan="7" class="text-center text-muted">No open positions</td></tr>';
+  }
+  const unrEl=document.getElementById('pnl-unrealized');
+  unrEl.textContent=(totalUnreal>=0?'+':'')+totalUnreal.toFixed(4);
+  unrEl.style.color=totalUnreal>=0?'var(--accent)':'var(--danger)';
+  document.getElementById('pnl-unrealized-card').className='card p-3 stat-card '+(totalUnreal>=0?'':'danger');
+
+  const stats=await h('/analytics');
+  if(!stats||stats.error)return;
+  document.getElementById('stat-total').textContent=stats.total_trades||0;
+  document.getElementById('stat-wr').textContent=(stats.win_rate||0)+'%';
+  document.getElementById('stat-aw').textContent='+'+(stats.avg_win||0);
+  document.getElementById('stat-al').textContent=(stats.avg_loss||0);
+  document.getElementById('stat-pnl').textContent=(stats.total_pnl||0);
+  document.getElementById('stat-wl').textContent=(stats.winners||0)+'W / '+(stats.losers||0)+'L';
+
+  const bal=await h('/balance');
+  if(bal&&!bal.error){
+    document.getElementById('pnl-total').textContent=parseFloat(bal.total||0).toFixed(2);
+    document.getElementById('pnl-free').textContent=parseFloat(bal.free||0).toFixed(2);
+    document.getElementById('pnl-used').textContent=parseFloat(bal.used||0).toFixed(2);
+  }
+}
+
+// ── TRADES ────────────────────────────────────────────────────────────────
+async function loadPositions(){
+  const pos=await h('/positions');
+  const tb=document.getElementById('ongoing-table');
+  if(!pos||!pos.length){tb.innerHTML='<tr><td colspan="7" class="text-center text-muted">No open positions</td></tr>';return;}
+  tb.innerHTML=pos.map(p=>{
+    const roe=parseFloat(p.roe||0);
+    const pnl=parseFloat(p.unrealizedPnl||0);
+    const side=(p.side||'').toLowerCase();
+    return`<tr>
+      <td style="font-size:.75rem">${p.symbol||'--'}</td>
+      <td class="${side==='long'?'pos-long':'pos-short'}">${side.toUpperCase()}</td>
+      <td>${parseFloat(p.contracts||0)}</td>
+      <td>${parseFloat(p.entryPrice||0).toFixed(4)}</td>
+      <td style="color:${roe>=0?'var(--accent)':'var(--danger)'}">${roe>=0?'+':''}${roe.toFixed(2)}%</td>
+      <td style="color:${pnl>=0?'var(--accent)':'var(--danger)'}">${pnl>=0?'+':''}$${pnl.toFixed(4)}</td>
+      <td><button class="btn btn-sm btn-danger-nexus" style="font-size:.65rem;padding:2px 8px" onclick="closePosition('${p.symbol}','${p.side}','${p.contracts}')">CLOSE</button></td>
+    </tr>`;
+  }).join('');
+}
+
+async function loadCompletedTrades(){
+  const period=document.getElementById('trade-period').value;
+  const url='/trades?limit=100'+(period?'&period_hours='+period:'');
+  const trades=await h(url);
+  const tb=document.getElementById('completed-table');
+  if(!trades||!trades.length){tb.innerHTML='<tr><td colspan="7" class="text-center text-muted">No completed trades</td></tr>';return;}
+  tb.innerHTML=trades.slice().reverse().map(t=>{
+    const pnl=parseFloat(t.pnl||0);
+    const ts=t.timestamp?new Date(parseFloat(t.timestamp)*1000).toLocaleString():'--';
+    return`<tr>
+      <td style="font-size:.7rem">${ts}</td>
+      <td style="font-size:.75rem">${t.symbol||'--'}</td>
+      <td class="${(t.direction||'').toLowerCase()==='long'?'pos-long':'pos-short'}">${(t.direction||'--').toUpperCase()}</td>
+      <td>${parseFloat(t.entry_price||0).toFixed(4)}</td>
+      <td>${parseFloat(t.exit_price||0).toFixed(4)}</td>
+      <td style="color:${pnl>=0?'var(--accent)':'var(--danger)'}">${pnl>=0?'+':''}$${pnl.toFixed(4)}</td>
+      <td style="font-size:.7rem;color:var(--muted)">${t.reason||'--'}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function placeManualTrade(){
+  const pair=document.getElementById('mt-pair').value.trim();
+  const side=document.getElementById('mt-side').value;
+  const qty=parseFloat(document.getElementById('mt-qty').value);
+  const type=document.getElementById('mt-type').value;
+  const price=document.getElementById('mt-price').value;
+  const el=document.getElementById('mt-result');
+  el.style.color='var(--warn)';el.textContent='Placing order...';
+  const r=await h('/trade/manual','POST',{symbol:pair,side,qty_usd:qty,order_type:type,price:price||null});
+  if(r.error||r.detail){el.style.color='var(--danger)';el.textContent='Error: '+(r.error||r.detail);}
+  else{el.style.color='var(--accent)';el.textContent='✅ Order placed! ID: '+(r.order_id||'ok');}
+  loadPositions();
+}
+
+async function closePosition(symbol,side,contracts){
+  if(!confirm('Close '+symbol+' '+side+'?'))return;
+  const r=await h('/trade/close','POST',{symbol,side,contracts});
+  alert(r.error?'Error: '+r.error:'✅ Position closed!');
+  loadPositions();
+}
+
+// ── BRAIN ─────────────────────────────────────────────────────────────────
+async function loadBrain(){
+  const d=await h('/analytics');
+  if(!d||d.error)return;
+  document.getElementById('br-trades').textContent=d.total_trades||0;
+  const wr=d.win_rate||0;
+  document.getElementById('br-wr').textContent=wr+'%';
+  document.getElementById('br-wr').style.color=wr>=50?'var(--accent)':'var(--danger)';
+  document.getElementById('br-aw').textContent='+'+(d.avg_win||0);
+  document.getElementById('br-al').textContent=(d.avg_loss||0);
+  const pnl=parseFloat(d.total_pnl||0);
+  document.getElementById('br-pnl').textContent=(pnl>=0?'+':'')+pnl;
+  document.getElementById('br-pnl').style.color=pnl>=0?'var(--accent)':'var(--danger)';
+  document.getElementById('br-time').textContent=d.last_updated?new Date(d.last_updated*1000).toLocaleString():'--';
+  if(d.alerts){
+    document.getElementById('br-alerts').innerHTML=d.alerts.map(a=>`<div style="font-size:.82rem;padding:4px 0;border-bottom:1px solid var(--border)">${a}</div>`).join('');
+  }
+  document.getElementById('br-adapt').textContent=d.adaptation_needed?'⚠️ Strategy adaptation recommended':'✅ Strategy within targets';
+  document.getElementById('br-adapt').style.color=d.adaptation_needed?'var(--warn)':'var(--accent)';
+}
+
+async function runBrainAnalysis(){
+  const el=document.getElementById('br-result');
+  el.style.color='var(--warn)';el.textContent='Analyzing...';
+  const r=await h('/analytics');
+  if(r.error){el.style.color='var(--danger)';el.textContent='Error: '+r.error;}
+  else{el.style.color='var(--accent)';el.textContent='✅ Analysis complete!';loadBrain();}
+}
+
+// ── BACKTEST ──────────────────────────────────────────────────────────────
+async function loadBacktest(){
+  const r=await h('/backtest/results');
+  if(r.error||r.detail){document.getElementById('bt-results').innerHTML='<div class="text-center text-muted py-3">No results yet. Run a backtest above.</div>';return;}
+  renderBacktest(r);
+}
+
+async function runBacktest(){
+  const tf=document.getElementById('bt-tf').value;
+  const limit=document.getElementById('bt-limit').value;
+  const syms=document.getElementById('bt-symbols').value;
+  const st=document.getElementById('bt-status');
+  st.textContent='⏳ Running backtest... ~60 seconds';
+  const r=await h(`/backtest/run?symbols=${encodeURIComponent(syms)}&timeframe=${tf}&limit=${limit}`,'POST');
+  if(r.error){st.style.color='var(--danger)';st.textContent='Error: '+r.error;return;}
+  st.textContent='Started! Auto-refreshing in 65s...';
+  setTimeout(()=>{loadBacktest();st.textContent='';},65000);
+}
+
+function renderBacktest(data){
+  const el=document.getElementById('bt-results');
+  if(!data.results){el.innerHTML='<div class="text-center text-muted">No results</div>';return;}
+  let html=`<div class="text-muted mb-2" style="font-size:.7rem">Last run: ${new Date(data.timestamp*1000).toLocaleString()} | ${data.timeframe} | ${data.candles_used} candles</div>`;
+  for(const[sym,strats] of Object.entries(data.results)){
+    html+=`<div class="card p-3 mb-3"><div class="section-hdr">${sym}</div><div class="row g-2">`;
+    for(const[strat,r] of Object.entries(strats)){
+      const pc=r.total_pnl_pct>=0?'var(--accent)':'var(--danger)';
+      const wc=r.win_rate_pct>=50?'var(--accent)':'var(--danger)';
+      html+=`<div class="col-4"><div class="card p-2 text-center">
+        <div style="font-size:.65rem;color:var(--muted);margin-bottom:4px">${strat}</div>
+        <div style="font-size:1.3rem;font-weight:700;color:${pc};font-family:monospace">${r.total_pnl_pct>=0?'+':''}${r.total_pnl_pct}%</div>
+        <div style="font-size:.7rem;color:${wc}">${r.win_rate_pct}% win</div>
+        <div style="font-size:.7rem;color:var(--muted)">${r.total_trades} trades</div>
+        ${r.best_trade?`<div style="font-size:.65rem;color:var(--accent)">Best: +${r.best_trade.pnl_pct}%</div>`:''}
+        ${r.worst_trade?`<div style="font-size:.65rem;color:var(--danger)">Worst: ${r.worst_trade.pnl_pct}%</div>`:''}
+      </div></div>`;
+    }
+    html+=`</div><div class="mt-2"><div style="font-size:.65rem;color:var(--muted);margin-bottom:4px">EQUITY CURVES</div>
+      <canvas id="btc-${sym.replace(/[/:]/g,'')}" height="60"></canvas></div></div>`;
+  }
+  el.innerHTML=html;
+  for(const[sym,strats] of Object.entries(data.results)){
+    const id='btc-'+sym.replace(/[/:]/g,'');
+    const canvas=document.getElementById(id);
+    if(!canvas)continue;
+    canvas.width=canvas.parentElement.offsetWidth;
+    const ctx=canvas.getContext('2d');
+    const colors=['#00ff88','#ff4757','#4488ff'];
+    Object.entries(strats).forEach(([s,r],i)=>{
+      const c=r.equity_curve;if(!c||c.length<2)return;
+      const mn=Math.min(...c),mx=Math.max(...c),rng=mx-mn||.01;
+      ctx.beginPath();ctx.strokeStyle=colors[i];ctx.lineWidth=1.5;
+      c.forEach((v,j)=>{const x=j/(c.length-1)*canvas.width,y=canvas.height-(v-mn)/rng*(canvas.height-4)-2;j===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+      ctx.stroke();
+      ctx.fillStyle=colors[i];ctx.font='9px monospace';ctx.fillText(s,4+i*50,10);
+    });
+  }
+}
+
+// ── CONTROL ───────────────────────────────────────────────────────────────
+async function botControl(action){
+  const r=await h('/control/'+action,'POST');
+  document.getElementById('ctrl-status').textContent=r.status?'Status: '+r.status:'Done';
+  loadLive();
+}
+
+async function saveROE(){
+  const tp=document.getElementById('roe-tp').value;
+  const sl=document.getElementById('roe-sl').value;
+  const r=await h('/admin/roe','POST',{target_roe:tp,sl_roe:sl});
+  const el=document.getElementById('roe-result');
+  el.style.color=r.status==='ok'?'var(--accent)':'var(--danger)';
+  el.textContent=r.status==='ok'?'✅ Saved!':'Error: '+(r.error||r.detail||'failed');
+}
+
+async function saveConfig(){
+  const data={
+    BOT_MAX_POS_USD:document.getElementById('cfg-maxpos').value,
+    BOT_POLL_SECONDS:document.getElementById('cfg-poll').value,
+    BOT_RISK_PCT:document.getElementById('cfg-risk').value,
+  };
+  const r=await h('/admin/config/update','POST',data);
+  const el=document.getElementById('cfg-result');
+  el.style.color=r.status==='ok'?'var(--accent)':'var(--danger)';
+  el.textContent=r.status==='ok'?'✅ Saved!':'Error: '+(r.error||r.detail||'failed');
+}
+
+async function loadConfig(){
+  const r=await h('/admin/config');
+  document.getElementById('cfg-display').textContent=r.error?'Error loading config':JSON.stringify(r,null,2);
+  if(r.BOT_TARGET_ROE){document.getElementById('roe-tp').value=r.BOT_TARGET_ROE;document.getElementById('roe-tp-val').textContent=r.BOT_TARGET_ROE+'%';}
+  if(r.BOT_SL_ROE){document.getElementById('roe-sl').value=r.BOT_SL_ROE;document.getElementById('roe-sl-val').textContent=r.BOT_SL_ROE+'%';}
+  if(r.BOT_POLL_SECONDS)document.getElementById('cfg-poll').value=r.BOT_POLL_SECONDS;
+  if(r.BOT_MAX_POS_USD)document.getElementById('cfg-maxpos').value=r.BOT_MAX_POS_USD;
+  if(r.BOT_RISK_PCT)document.getElementById('cfg-risk').value=r.BOT_RISK_PCT;
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────
+function fmtTime(s){
+  const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=Math.floor(s%60);
+  return h>0?`${h}h ${m}m`:`${m}m ${sc}s`;
+}
+
+document.getElementById('mt-type').addEventListener('change',function(){
+  document.getElementById('mt-price-wrap').style.display=this.value==='limit'?'block':'none';
+});
+
+// Auto-refresh live page
+setInterval(()=>{
+  const live=document.getElementById('page-live');
+  if(live.classList.contains('active'))loadLive();
+},30000);
+
+loadLive();
+</script>
+</body>
+</html>

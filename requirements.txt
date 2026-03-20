@@ -1,0 +1,14 @@
+# ── Core trading dependencies ──────────────────────────────
+ccxt>=4.3.0
+pandas>=2.1.0
+pandas_ta>=0.3.14b
+
+# ── API server ─────────────────────────────────────────────
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+
+# ── Security / config ──────────────────────────────────────
+python-dotenv>=1.0.0
+
+# ── PythonAnywhere install command ────────────────────────
+# pip install --user -r requirements.txt
