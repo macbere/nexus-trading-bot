@@ -154,7 +154,7 @@ class PairEngine:
             minutes_since = (time.time() - self.last_trade_time[symbol]) / 60
             if minutes_since < self.cooldown_minutes:
                 logger.info("[PairEngine] {} in cooldown ({}m remaining)".format(symbol, remaining))
-                logger.info("[PairEngine] {} in cooldown ({}m remaining)".format(symbol, remaining))                return False
+                logger.info("[PairEngine] {} in cooldown ({}m remaining)".format(symbol, remaining))
         return True
 
     def _record_trade(self, symbol):
