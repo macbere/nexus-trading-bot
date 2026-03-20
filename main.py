@@ -53,6 +53,31 @@ def run_bot():
             break
 
 # For Render - run web server and bot
+
+
+@app.route('/pairs')
+def get_pairs():
+    """Get current trading pairs info"""
+    return {
+        "tracked_pairs": 50,
+        "max_open_positions": 5,
+        "scan_limit": 50,
+        "status": "active"
+    }
+
+@app.route('/stats')
+def get_stats():
+    """Get bot statistics"""
+    return {
+        "bot_status": "running",
+        "configuration": {
+            "pairs_scanned": 50,
+            "max_open": 5,
+            "test_run": "48 hours"
+        }
+    }
+
+
 if __name__ == "__main__":
     import threading
     
