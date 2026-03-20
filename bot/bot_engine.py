@@ -39,7 +39,7 @@ class BotEngine:
     def _handle_shutdown(self, *_) -> None:
         logger.warning("[Engine] Shutdown — stopping cleanly.")
         self._stop = True
-        bot_state.running = False
+        self.bot_state.running = False
 
     def _tick(self) -> None:
         try:
@@ -47,7 +47,7 @@ class BotEngine:
             logger.info(f"[Engine] Tick #{bot_state.tick_count} — running all pairs")
             self.pair_engine.tick_all()
         except Exception as exc:
-            bot_state.last_error = str(exc)
+            self.bot_state.last_error = str(exc)
             logger.exception("[Engine] Unhandled exception: %s", exc)
 
     def run(self) -> None:
@@ -66,5 +66,5 @@ class BotEngine:
                 if self._stop:
                     break
                 time.sleep(1)
-        bot_state.running = False
+        self.bot_state.running = False
         logger.info("[Engine] Bot stopped cleanly.")
