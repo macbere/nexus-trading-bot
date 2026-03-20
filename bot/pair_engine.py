@@ -81,10 +81,6 @@ class PairTrader:
                 return False
                 
             sig = self.strategy.generate_signal(self.exchange)
-            # Check cooldown
-            if not self._can_trade_symbol(self.symbol):
-                return False
-            
             if not sig or sig.direction == "FLAT":
                 logger.info(f"[PairTrader] {self.symbol} signal=FLAT - skip")
                 return False
@@ -151,20 +147,7 @@ class PairEngine:
         logger.info("[PairEngine] Ready — Smart Market Scanner active")
 
     
-    def _can_trade_symbol(self, symbol):
-        """Check if symbol is in cooldown period"""
-        import time
-        if symbol in self.last_trade_time:
-            minutes_since = (time.time() - self.last_trade_time[symbol]) / 60
-            if minutes_since < self.cooldown_minutes:
-                logger.info("[PairEngine] {} in cooldown ({}m remaining)".format(symbol, remaining))
-                logger.info("[PairEngine] {} in cooldown ({}m remaining)".format(symbol, remaining))
-        return True
 
-    def _record_trade(self, symbol):
-        """Record trade time for cooldown"""
-        import time
-        self.last_trade_time[symbol] = time.time()
 
 def _get_trader(self, symbol):
         """Get or create a PairTrader for a symbol."""
