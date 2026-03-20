@@ -62,11 +62,9 @@ def get_stats():
     }
 
 
-@app.route('/')
 def home():
     return "Trading Bot is Running! 🚀"
 
-@app.route('/status')
 def status():
     return {"status": "healthy", "timestamp": time.time()}
 
@@ -106,7 +104,6 @@ def run_bot():
 # For Render - run web server and bot
 
 
-@app.route('/pairs')
 def get_pairs():
     """Get current trading pairs info"""
     return {
@@ -116,7 +113,6 @@ def get_pairs():
         "status": "active"
     }
 
-@app.route('/stats')
 def get_stats():
     """Get bot statistics"""
     return {
