@@ -27,6 +27,7 @@ class BotState:
 
 bot_state = BotState()
 
+        self.exchange = build_exchange(self.cfg)
 class BotEngine:
     def __init__(self):
         self.cfg        = load_config()
