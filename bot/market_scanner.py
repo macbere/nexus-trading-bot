@@ -21,7 +21,7 @@ class MarketScanner:
         self.max_pairs = 3
         logger.info("[Scanner] Ready - will scan top 10 pairs by volume")
 
-    def _get_top_pairs_by_volume(self, limit=10):
+    def _get_top_pairs_by_volume(self, limit=50):
         """Get top pairs by 24h volume from Bitget API"""
         try:
             url = "https://api.bitget.com/api/v2/mix/market/tickers?productType=USDT-FUTURES"
@@ -136,7 +136,7 @@ class MarketScanner:
 
         try:
             # ONLY scan top 10 pairs by volume to save CPU
-            futures = self._get_top_pairs_by_volume(limit=10)
+            futures = self._get_top_pairs_by_volume(limit=50)
             logger.info(f"[Scanner] Scanning ONLY {len(futures)} top pairs by volume")
 
             scored = []

@@ -11,7 +11,7 @@ class PairEngine:
         self.config = config
         self.exchange = exchange
         self.traders = {}
-        self.max_open = 3
+        self.max_open = 5
         logger.info("[PairEngine] Ready - Smart Market Scanner active")
     
     def get_trader(self, symbol):
@@ -43,7 +43,7 @@ class PairEngine:
                 return False
             
             from bot.market_scanner import get_top_pairs
-            top_pairs = get_top_pairs(self.config, limit=10)            
+            top_pairs = get_top_pairs(self.config, limit=50)            
             for pair in top_pairs:
                 trader = self.get_trader(pair)
                 trader.trade()
