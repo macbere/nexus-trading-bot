@@ -92,8 +92,8 @@ class PairTrader:
             logger.info(f"[PairTrader] {self.symbol} --- Attempting {side.upper()} {qty} @ {sig.price}")
             
             # Calculate TP/SL
-            tp_price = sig.price * 1.025            sl_price = sig.price * 0.985
-            
+            tp_price = sig.price * 1.025
+            sl_price = sig.price * 0.985
             # Place order (implementation depends on your exchange wrapper)
             order = self.exchange.create_market_order(self.symbol, side, qty)
             
