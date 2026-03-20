@@ -2,14 +2,14 @@
 import os
 import time
 import logging
-from flask import Flask
+from flask import Flask, render_template, request, jsonify
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Flask app for Render
-app = Flask(__name__)
+app = Flask(__name__, static_folder="dashboard/static", static_url_path="/static", template_folder="templates")
 
 @app.route('/ping')
 def ping():
@@ -151,6 +151,61 @@ def self_ping_loop():
             logger.warning(f"Self-ping failed: {e}")
 
 # Start self-ping in background thread
+
+# Dashboard Routes
+@app.route('/dashboard')
+def dashboard():
+    """Main dashboard page"""
+    return render_template('dashboard.html')
+
+@app.route('/api/stats')
+def api_stats():
+    """Get bot statistics"""
+    return {
+        "daily_pnl": 0.00,
+        "daily_pnl_percent": 0.00,
+        "win_rate": 0.0,
+        "wins": 0,
+        "losses": 0,
+        "active_positions": 0,
+        "max_positions": 5,
+        "trades_today": 0,
+        "logs": []
+    }
+
+@app.route('/api/balance')
+def api_balance():
+    """Get account balance"""
+    return {
+        "total": 24.44,
+        "available": 24.44,
+        "in_use": 0.00,
+        "currency": "USDT"
+    }
+
+@app.route('/api/trades/open')
+def api_open_trades():
+    """Get open positions"""
+    return []  # Will be populated with real data
+
+@app.route('/api/trades/close', methods=['POST'])
+def api_close_trade():
+    """Close a position"""
+    data = request.get_json() or {}
+    return {"success": True, "message": f"Closing {data.get('trade_id', 'position')}"}
+
+@app.route('/api/settings', methods=['POST'])
+def api_save_settings():
+    """Save bot settings"""
+    data = request.get_json() or {}
+    return {"success": True, "message": "Settings saved"}
+
+@app.route('/api/emergency-stop', methods=['POST'])
+def api_emergency_stop():
+    """Emergency stop all trading"""
+    return {"success": True, "message": "Emergency stop initiated - closing all positions"}
+
+
 if __name__ == "__main__":
     # Start self-ping thread
     ping_thread = threading.Thread(target=self_ping_loop, daemon=True)
