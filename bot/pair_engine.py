@@ -76,8 +76,6 @@ class PairTrader:
     def trade(self):
         """Attempt to open a new trade on this pair."""
         try:
-            # Check cooldown period
-            if not self._can_trade_symbol(self.symbol):
                 return False
                 
             sig = self.strategy.generate_signal(self.exchange)
@@ -147,7 +145,13 @@ class PairEngine:
         logger.info("[PairEngine] Ready — Smart Market Scanner active")
 
     
+        import time
+        if symbol in self.last_trade_time:
+            minutes_since = (time.time() - self.last_trade_time[symbol]) / 60
+        return True
 
+        import time
+        self.last_trade_time[symbol] = time.time()
 
 def _get_trader(self, symbol):
         """Get or create a PairTrader for a symbol."""
