@@ -238,6 +238,32 @@ def api_emergency_stop():
     return {"success": True, "message": "Emergency stop initiated - closing all positions"}
 
 
+
+@app.route('/api/analytics')
+def api_analytics():
+    """Get analytics data for charts"""
+    return {
+        "pnl_history": [],
+        "equity_history": [],
+        "wins": 0,
+        "losses": 0,
+        "total_profit": 0.00,
+        "best_trade": 0.00,
+        "worst_trade": 0.00,
+        "avg_win": 0.00,
+        "avg_loss": 0.00,
+        "profit_factor": 0.00,
+        "sharpe_ratio": 0.00,
+        "max_drawdown": 0.00,
+        "total_trades": 0
+    }
+
+@app.route('/api/trades/history')
+def api_trade_history():
+    """Get trade history"""
+    return []
+
+
 if __name__ == "__main__":
     # Start self-ping thread
     ping_thread = threading.Thread(target=self_ping_loop, daemon=True)
