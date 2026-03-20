@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: nexus-trading-bot
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python3 main.py"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: BOT_SYMBOL
+        value: BTCUSDT
+      - key: BOT_RISK_PCT
+        value: "10.0"
+      - key: BOT_MAX_POS_USD
+        value: "3.0"
+      - key: BOT_MAX_DAILY_LOSS_USD
+        value: "2.0"
+      - key: BOT_TRADE_COOLDOWN_MIN
+        value: "30"
+      - key: BOT_MIN_ADX_FOR_TREND
+        value: "25"
+      - key: BOT_RSI_OVERSOLD
+        value: "30"
+      - key: BOT_RSI_OVERBOUGHT
+        value: "70"
+      - key: BOT_TAKE_PROFIT_PCT
+        value: "2.5"
+      - key: BOT_STOP_LOSS_PCT
+        value: "1.5"
+      - key: BITGET_API_KEY
+        sync: false
+      - key: BITGET_SECRET
+        sync: false
+      - key: BITGET_PASSWORD
+        sync: false
