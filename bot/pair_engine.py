@@ -39,7 +39,7 @@ class PairEngine:
         """Scan pairs and execute trades"""
         try:
             if self.count_open() >= self.max_open:
-                logger.info(f"[PairEngine] Max positions ({self.max_open}) reached - skipping")
+                logger.info("[PairEngine] Max positions ({self.max_open}) reached - skipping")
                 return False
             
             from bot.market_scanner import get_top_pairs
@@ -51,5 +51,5 @@ class PairEngine:
             
             return True
         except Exception as e:
-            logger.error(f"[PairEngine] Scan error: {e}")
+            logger.error("[PairEngine] Scan error: {e}")
             return False
