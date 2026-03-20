@@ -1,4 +1,4 @@
-"""Pair Trader - Handles trading logic for individual pairs"""
+"""Pair Trader - Enhanced with Multi-Timeframe Analysis"""
 import logging
 import time
 
@@ -13,6 +13,13 @@ class PairTrader:
         self.exchange = exchange
         self.last_trade_time = 0
         self.cooldown_minutes = int(config.get('BOT_TRADE_COOLDOWN_MIN', '30'))
+        
+        # Initialize multi-timeframe analyzer
+        from bot.multi_timeframe import MultiTimeframeAnalyzer
+        self.mtf_analyzer = MultiTimeframeAnalyzer(exchange, config)
+        
+        # Minimum score to trade (0-100)
+        self.min_trade_score = float(config.get('MIN_TRADE_SCORE', '70'))
     
     def trade(self):
         """Attempt to open a new trade on this pair"""
@@ -24,38 +31,97 @@ class PairTrader:
                 logger.info(f"[PairTrader] {self.symbol} in cooldown ({remaining}m remaining)")
                 return False
             
-            # Generate signal
-            sig = self.strategy.generate_signal(self.exchange)
-            if not sig or sig.direction == "FLAT":
-                logger.info(f"[PairTrader] {self.symbol} signal=FLAT - skip")
+            # Multi-timeframe analysis
+            mtf_result = self.mtf_analyzer.analyze_all_timeframes(self.symbol)
+            
+            if not mtf_result:
+                logger.warning(f"[PairTrader] {self.symbol} - No MTF data available")
                 return False
             
-            # Calculate side and quantity
-            side = "buy" if sig.direction == "LONG" else "sell"
+            # Check score
+            score = mtf_result.get('score', 50)
+            signal = mtf_result.get('signal', 'NEUTRAL')
+            
+            logger.info(f"[PairTrader] {self.symbol} - Score: {score:.1f}, Signal: {signal}")
+            
+            # Only trade if score is high enough
+            if score < self.min_trade_score:                logger.info(f"[PairTrader] {self.symbol} - Score {score:.1f} below threshold {self.min_trade_score}")
+                return False
+            
+            # Check momentum alignment
+            if not mtf_result.get('details', {}).get('momentum_alignment', False):
+                logger.info(f"[PairTrader] {self.symbol} - Momentum not aligned across timeframes")
+                return False
+            
+            # Get latest price
+            ticker = self.exchange.fetch_ticker(self.symbol)
+            current_price = ticker['last']
+            
+            # Determine direction
+            if signal in ['STRONG_BUY', 'BUY']:
+                direction = 'LONG'
+            elif signal in ['STRONG_SELL', 'SELL']:
+                direction = 'SHORT'
+            else:
+                logger.info(f"[PairTrader] {self.symbol} - Neutral signal")
+                return False
+            
+            # Calculate quantity
+            qty = self._calc_qty(current_price)
             if not qty or qty <= 0:
                 logger.warning(f"[PairTrader] {self.symbol} qty=0, skipping trade")
                 return False
             
-            # Calculate TP/SL
-            tp_price = sig.price * 1.025
-            sl_price = sig.price * 0.985
+            # Calculate TP/SL based on ATR
+            tp_price, sl_price = self._calculate_tp_sl(current_price, direction)
             
             # Execute order
-            logger.info(f"[PairTrader] {self.symbol} --- Attempting {side.upper()} {qty} @ {sig.price}")
+            logger.info(f"[PairTrader] {self.symbol} --- {direction} {qty} @ {current_price}")
+            logger.info(f"[PairTrader] {self.symbol} TP: {tp_price}, SL: {sl_price}")
             
-            order = self.exchange.create_market_order(self.symbol, side, qty)
+            order = self.exchange.create_market_order(self.symbol, direction.lower(), qty)
             
             if order:
                 self.last_trade_time = time.time()
-                logger.info(f"[PairTrader] {self.symbol} ORDER SUCCESS - TP: {tp_price}, SL: {sl_price}")
+                logger.info(f"[PairTrader] {self.symbol} ✅ ORDER SUCCESS - Score: {score:.1f}")
                 return True
             else:
-                logger.error(f"[PairTrader] {self.symbol} ORDER FAILED")
+                logger.error(f"[PairTrader] {self.symbol} ❌ ORDER FAILED")
                 return False
                 
         except Exception as e:
             logger.error(f"[PairTrader] {self.symbol} trade error: {e}")
             return False
+    
+    def _calculate_tp_sl(self, price: float, direction: str) -> tuple:
+        """Calculate Take Profit and Stop Loss based on ATR"""        try:
+            # Get ATR from 1h timeframe
+            df = self.mtf_analyzer.get_ohlcv(self.symbol, '1h', limit=50)
+            if df.empty:
+                # Fallback to fixed percentages
+                if direction == 'LONG':
+                    return price * 1.025, price * 0.985
+                else:
+                    return price * 0.975, price * 1.015
+            
+            atr = df.iloc[-1]['atr']
+            
+            # Use 2x ATR for TP and 1.5x ATR for SL
+            if direction == 'LONG':
+                tp_price = price + (2 * atr)
+                sl_price = price - (1.5 * atr)
+            else:
+                tp_price = price - (2 * atr)
+                sl_price = price + (1.5 * atr)
+            
+            return round(tp_price, 2), round(sl_price, 2)
+            
+        except Exception as e:
+            logger.error(f"Error calculating TP/SL: {e}")
+            if direction == 'LONG':
+                return price * 1.025, price * 0.985
+            else:
+                return price * 0.975, price * 1.015
     
     def _calc_qty(self, price):
         """Calculate position size based on risk settings"""
@@ -70,9 +136,3 @@ class PairTrader:
         except Exception as e:
             logger.error(f"Error calculating quantity: {e}")
             return 0
-    
-    @property
-    def strategy(self):
-        """Get trading strategy"""
-        from bot.multi_strategy import MultiStrategy
-        return MultiStrategy(self.config)
