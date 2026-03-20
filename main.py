@@ -132,13 +132,35 @@ def get_stats():
     }
 
 
-if __name__ == "__main__":
-    import threading
+
+import threading
+import requests
+import time
+
+def self_ping_loop():
+    """Self-ping to keep bot alive (backup)"""
+    bot_url = "https://nexus-trading-bot.onrender.com"
     
-    # Start bot in background
+    while True:
+        try:
+            # Ping every 10 minutes
+            time.sleep(600)
+            requests.get(f"{bot_url}/ping", timeout=5)
+            logger.info("❤️  Self-ping sent")
+        except Exception as e:
+            logger.warning(f"Self-ping failed: {e}")
+
+# Start self-ping in background thread
+if __name__ == "__main__":
+    # Start self-ping thread
+    ping_thread = threading.Thread(target=self_ping_loop, daemon=True)
+    ping_thread.start()
+    
+    # Start bot
+    import threading
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     
-    # Run web server on Render's port
+    # Run web server
     port = int(os.environ.get('PORT', 8000))
     app.run(host='0.0.0.0', port=port)
