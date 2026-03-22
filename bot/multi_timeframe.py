@@ -43,7 +43,7 @@ class MultiTimeframeAnalyzer:
             df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
             df = self.calculate_indicators(df)
             signal = self.get_signal(df)
-                        return {
+            return {
                 'timeframe': timeframe,
                 'signal': signal,
                 'indicators': {
