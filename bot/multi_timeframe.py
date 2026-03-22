@@ -141,7 +141,7 @@ class MultiTimeframeAnalyzer:
         
         tr = self.calculate_true_range(df)
         atr = tr.rolling(window=period).mean()
-                plus_di = 100 * (plus_dm.rolling(window=period).mean() / atr)
+        plus_di = 100 * (plus_dm.rolling(window=period).mean() / atr)
         minus_di = 100 * (minus_dm.rolling(window=period).mean() / atr)
         
         dx = 100 * abs(plus_di - minus_di) / (plus_di + minus_di)
