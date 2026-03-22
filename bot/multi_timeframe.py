@@ -190,7 +190,8 @@ class MultiTimeframeAnalyzer:
             return 'SIDEWAYS'
     
     def determine_momentum(self, latest: pd.Series, prev: pd.Series) -> str:
-        """Determine momentum"""        rsi = latest['rsi']
+        """Determine momentum"""
+        rsi = latest['rsi']
         macd = latest['macd']
         macd_signal = latest['macd_signal']
         
