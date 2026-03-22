@@ -53,7 +53,7 @@ class PairEngine:
                 time.sleep(2)
             
             return True
-        except Exception as e:
+    except Exception as e:
             logger.error(f"[PairEngine] Scan error: {str(e)}")
         logger.error(f"[PairEngine] Full traceback:")
         import traceback
