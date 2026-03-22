@@ -46,7 +46,7 @@ class PairTrader:
             
             # Only trade if score is high enough
             if score < self.min_trade_score:                logger.info(f"[PairTrader] {self.symbol} - Score {score:.1f} below threshold {self.min_trade_score}")
-                return False
+            return False
             
             # Check momentum alignment
             if not mtf_result.get('details', {}).get('momentum_alignment', False):
