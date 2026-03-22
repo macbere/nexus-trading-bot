@@ -118,12 +118,12 @@ class MultiTimeframeAnalyzer:
             total = len(signals)
             
             # Determine overall signal
-            if buy_count >= total * 0.6:
+        if buy_count >= total * 0.6:
             overall_signal = 'BUY'
         elif sell_count >= total * 0.6:
-                overall_signal = 'SELL'
-            else:
-                overall_signal = 'NEUTRAL'
+            overall_signal = 'SELL'
+        else:
+            overall_signal = 'NEUTRAL'
             
             # Calculate score
             score = 50
