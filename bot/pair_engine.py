@@ -29,7 +29,7 @@ class PairEngine:
     def count_open(self):
         """Count currently open positions"""
         try:
-            positions = self.exchange.get_positions()
+            positions = self.exchange.fetch_positions()
             return len([p for p in positions if p.get('symbol') and 'USDT' in p.get('symbol', '')])
         except Exception as e:
             logger.error(f"Error counting positions: {e}")
