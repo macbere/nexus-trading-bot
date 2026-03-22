@@ -10,6 +10,37 @@ logger = logging.getLogger(__name__)
 
 BLACKLIST = []
 
+
+# Module-level function for easy import
+def get_top_pairs(config=None, limit=50):
+    """
+    Standalone function to get top trading pairs.
+    This wraps the MarketScanner class for easy access.
+    """
+    try:
+        from bot.config_loader import load_config
+        from bot.exchange_factory import build_exchange
+        
+        if config is None:
+            config = load_config()
+        
+        exchange = build_exchange(config)
+        
+        # Create scanner instance
+        scanner = MarketScanner(config, exchange)
+        
+        # Get top pairs
+        pairs = scanner.scan_all_markets()
+        
+        # Return top N pairs
+        if pairs:
+            return pairs[:limit]
+        return []
+    except Exception as e:
+        print(f"Error in get_top_pairs: {e}")
+        return []
+
+
 class MarketScanner:
     def __init__(self, config, exchange):
         self.config = config
