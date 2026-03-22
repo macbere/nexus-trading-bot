@@ -292,7 +292,7 @@ class MultiTimeframeAnalyzer:
         def check_momentum_alignment(self, results: Dict) -> bool:
         """Check if momentum aligns across timeframes"""
         if len(results) < 2:
-            return False
+        return False
         
         signals = [data['signal'] for data in results.values()]
         
