@@ -57,20 +57,4 @@ class PairEngine:
             logger.error(f"[PairEngine] Scan error: {str(e)}")
             logger.error(f"[PairEngine] Full traceback:")
             import traceback
-            logger.error(traceback.format_exc())
-            return False
-            
-            from bot.market_scanner import get_top_pairs
-            top_pairs = get_top_pairs(self.config, limit=50)            
-            for pair in top_pairs:
-                trader = self.get_trader(pair)
-                trader.trade()
-                time.sleep(2)
-            
-            return True
-    except Exception as e:
-            logger.error(f"[PairEngine] Scan error: {str(e)}")
-        logger.error(f"[PairEngine] Full traceback:")
-        import traceback
-        logger.error(traceback.format_exc())
             return False
