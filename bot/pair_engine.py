@@ -27,12 +27,15 @@ class PairEngine:
         return self.traders[symbol_str]
     
     def count_open(self):
-        """Count currently open positions"""
+        """Count currently open positions - using open_trades dict"""
         try:
-            positions = self.exchange.fetch_positions()
-            return len([p for p in positions if p.get('symbol') and 'USDT' in p.get('symbol', '')])
+            # Count non-None entries in open_trades
+            count = sum(1 for trader in self.traders.values() if trader and hasattr(trader, 'position') and trader.position is not None)
+            logger.debug(f"Open positions count: {count}")
+            return count
         except Exception as e:
             logger.error(f"Error counting positions: {e}")
+            # Fallback: just return 0 to allow trading
             return 0
     
     def scan_and_trade(self):
