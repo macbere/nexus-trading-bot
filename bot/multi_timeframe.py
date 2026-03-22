@@ -124,6 +124,9 @@ class MultiTimeframeAnalyzer:
             overall_signal = 'SELL'
         else:
             overall_signal = 'NEUTRAL'
+        except Exception as e:
+            print(f"Error combining results: {e}")
+            return {'signal': 'NEUTRAL', 'score': 50, 'timeframe_signals': results}
             
             # Calculate score
             score = 50
