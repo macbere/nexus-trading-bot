@@ -94,7 +94,7 @@ class PairTrader:
             return False
     
     def _calculate_tp_sl(self, price: float, direction: str) -> tuple:
-"""Calculate Take Profit and Stop Loss based on ATR"""
+        """Calculate Take Profit and Stop Loss based on ATR"""
         try:
             # Get ATR from 1h timeframe
             df = self.mtf_analyzer.get_ohlcv(self.symbol, '1h', limit=50)
