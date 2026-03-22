@@ -77,37 +77,50 @@ def status():
     return {"status": "healthy", "timestamp": time.time()}
 
 def run_bot():
-    """Minimal bot loop"""
+    """Full trading bot with PairEngine"""
     logger.info("✅ Bot starting...")
     
-    # Load config
     try:
+        # Load config
         from bot.config_loader import load_config
         config = load_config()
-        logger.info("✅ Config loaded")
-    except Exception as e:
-        logger.error(f"❌ Config error: {e}")
-        return
-    
-    # Connect to exchange
-    try:
+        logger.info("✅ Config loaded")        
+        # Build exchange
         from bot.exchange_factory import build_exchange
         exchange = build_exchange(config)
         logger.info("✅ Exchange connected")
+        
+        # Initialize PairEngine
+        from bot.pair_engine import PairEngine
+        engine = PairEngine(config, exchange)
+        logger.info("✅ PairEngine initialized")
+        
+        logger.info("🎉 Bot is running! Scanning markets...")
+        
+        # Main trading loop
+        while True:
+            try:
+                # Scan and trade
+                engine.scan_and_trade()
+                
+                # Wait before next scan
+                poll_seconds = int(config.get('BOT_POLL_SECONDS', '60'))
+                logger.info(f"⏳ Waiting {poll_seconds}s before next scan...")
+                time.sleep(poll_seconds)
+                
+            except KeyboardInterrupt:
+                logger.info("👋 Bot shutting down...")
+                break
+            except Exception as e:
+                logger.error(f"❌ Error in trading loop: {e}")
+                import traceback
+                logger.error(traceback.format_exc())
+                time.sleep(60)
+                
     except Exception as e:
-        logger.error(f"❌ Exchange error: {e}")
-        return
-    
-    logger.info("🎉 Bot is running! Waiting for signals...")
-    
-    # Simple loop
-    while True:
-        try:
-            time.sleep(60)
-            logger.info("❤️  Bot alive...")
-        except KeyboardInterrupt:
-            logger.info("👋 Bot shutting down...")
-            break
+        logger.error(f"❌ Bot initialization error: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
 
 # For Render - run web server and bot
 
