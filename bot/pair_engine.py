@@ -54,5 +54,8 @@ class PairEngine:
             
             return True
         except Exception as e:
-            logger.error("[PairEngine] Scan error: {e}")
+            logger.error(f"[PairEngine] Scan error: {str(e)}")
+        logger.error(f"[PairEngine] Full traceback:")
+        import traceback
+        logger.error(traceback.format_exc())
             return False
