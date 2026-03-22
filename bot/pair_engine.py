@@ -58,4 +58,4 @@ class PairEngine:
         logger.error(f"[PairEngine] Full traceback:")
         import traceback
         logger.error(traceback.format_exc())
-    return False
+            return False
