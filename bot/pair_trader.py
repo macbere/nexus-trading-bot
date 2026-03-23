@@ -43,6 +43,11 @@ class PairTrader:
                 logger.info(f"[PairTrader] {self.symbol} - Neutral signal, skipping")
                 return False
 
+            # Validate symbol exists
+            markets = self.exchange.markets
+            if self.symbol not in markets:
+                logger.warning(f"[PairTrader] {self.symbol} not in markets, skipping")
+                return False
             ticker = self.exchange.fetch_ticker(self.symbol)
             current_price = ticker["last"]
 
