@@ -16,7 +16,9 @@ class MultiTimeframeAnalyzer:
                 if result:
                     results[tf] = result
                 time.sleep(0.5)
-            return self.combine_timeframe_results(results) if results else None
+            if results:
+                return self.combine_timeframe_results(results)
+            return None
         except Exception as e:
             print(f"Error analyzing {symbol}: {e}")
             return None
@@ -28,7 +30,8 @@ class MultiTimeframeAnalyzer:
                 return None
             df = pd.DataFrame(ohlcv, columns=["timestamp","open","high","low","close","volume"])
             df = self.calculate_indicators(df)
-            return {"timeframe": timeframe, "signal": self.get_signal(df)}
+            signal = self.get_signal(df)
+            return {"timeframe": timeframe, "signal": signal}
         except Exception as e:
             print(f"Error {symbol} {timeframe}: {e}")
             return None
@@ -49,10 +52,14 @@ class MultiTimeframeAnalyzer:
             rsi = df["rsi"].iloc[-1]
             macd = df["macd"].iloc[-1]
             ms = df["macd_signal"].iloc[-1]
-            if rsi < 30 and macd > ms: return "STRONG_BUY"
-            if rsi < 40 or (macd > ms and rsi < 50): return "BUY"
-            if rsi > 70 and macd < ms: return "STRONG_SELL"
-            if rsi > 60 or (macd < ms and rsi > 50): return "SELL"
+            if rsi < 30 and macd > ms:
+                return "STRONG_BUY"
+            if rsi < 40 or (macd > ms and rsi < 50):
+                return "BUY"
+            if rsi > 70 and macd < ms:
+                return "STRONG_SELL"
+            if rsi > 60 or (macd < ms and rsi > 50):
+                return "SELL"
             return "NEUTRAL"
         except:
             return "NEUTRAL"
@@ -63,9 +70,12 @@ class MultiTimeframeAnalyzer:
             buys = sum(1 for s in signals if s in ["BUY","STRONG_BUY"])
             sells = sum(1 for s in signals if s in ["SELL","STRONG_SELL"])
             total = len(signals)
-            if buys >= total * 0.6: sig = "BUY"
-            elif sells >= total * 0.6: sig = "SELL"
-            else: sig = "NEUTRAL"
+            if buys >= total * 0.6:
+                sig = "BUY"
+            elif sells >= total * 0.6:
+                sig = "SELL"
+            else:
+                sig = "NEUTRAL"
             return {"signal": sig, "score": 50, "timeframe_signals": results}
         except Exception as e:
             return {"signal": "NEUTRAL", "score": 50, "timeframe_signals": results}
@@ -88,7 +98,9 @@ def get_top_pairs(config=None, limit=50):
         exchange = build_exchange(config)
         scanner = MarketScanner(config, exchange)
         pairs = scanner.scan_all_markets()
-        return pairs[:limit] if pairs else []
+        if pairs:
+            return pairs[:limit]
+        return []
     except Exception as e:
         print(f"Error in get_top_pairs: {e}")
         return []
