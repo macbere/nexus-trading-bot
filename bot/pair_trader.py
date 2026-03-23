@@ -49,22 +49,22 @@ class PairTrader:
                 logger.warning(f"[PairTrader] {self.symbol} not in markets, skipping")
                 return False
             try:
-                # Try with full symbol first, fallback to stripped symbol
-                ticker = None
-                for sym in [self.symbol, self.symbol.replace(":USDT", "")]:
-                    try:
-                        ticker = self.exchange.fetch_ticker(sym, params={"productType": "USDT-FUTURES"})
-                        if ticker and "last" in ticker and ticker["last"]:
-                            logger.info(f"[PairTrader] Got ticker for {sym}")
-                            break
-                    except Exception:
-                        continue
-                if not ticker or "last" not in ticker or not ticker["last"]:
-                    logger.warning(f"[PairTrader] {self.symbol} invalid ticker data, skipping")
+                import requests
+                base = self.symbol.replace(":USDT", "").replace("/", "")
+                url = f"https://api.bitget.com/api/v2/mix/market/ticker?symbol={base}USDT&productType=USDT-FUTURES"
+                resp = requests.get(url, timeout=10)
+                data = resp.json()
+                logger.info(f"[PairTrader] Raw API response for {self.symbol}: {data.get('code')} {str(data)[:200]}")
+                if data.get("code") != "00000" or not data.get("data"):
+                    logger.warning(f"[PairTrader] {self.symbol} API error, skipping")
                     return False
-                current_price = float(ticker["last"])
+                current_price = float(data["data"][0].get("lastPr", 0))
+                if not current_price:
+                    logger.warning(f"[PairTrader] {self.symbol} price=0, skipping")
+                    return False
+                logger.info(f"[PairTrader] {self.symbol} price via direct API: {current_price}")
             except Exception as te:
-                logger.warning(f"[PairTrader] {self.symbol} fetch_ticker failed: {te}, skipping")
+                logger.warning(f"[PairTrader] {self.symbol} price fetch failed: {te}")
                 return False
 
             qty = self._calc_qty(current_price)
