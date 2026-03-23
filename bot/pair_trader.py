@@ -49,11 +49,11 @@ class PairTrader:
                 logger.warning(f"[PairTrader] {self.symbol} not in markets, skipping")
                 return False
             try:
-                ticker = self.exchange.fetch_ticker(self.symbol)
+                ticker = self.exchange.fetch_ticker(self.symbol, params={"productType": "USDT-FUTURES"})
                 if not ticker or "last" not in ticker or not ticker["last"]:
                     logger.warning(f"[PairTrader] {self.symbol} invalid ticker data, skipping")
                     return False
-                current_price = ticker["last"]
+                current_price = float(ticker["last"])
             except Exception as te:
                 logger.warning(f"[PairTrader] {self.symbol} fetch_ticker failed: {te}, skipping")
                 return False
