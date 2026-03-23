@@ -88,6 +88,16 @@ def run_bot():
         # Build exchange
         from bot.exchange_factory import build_exchange
         exchange = build_exchange(config)
+    # Test Bitget connection
+    print("🔄 Testing Bitget connection...")
+    try:
+        balance = exchange.fetch_balance()
+        usdt_balance = balance.get('USDT', {}).get('free', 0)
+        print(f"✅ Bitget connected! USDT Balance: {usdt_balance}")
+    except Exception as e:
+        print(f"⚠️  Connection test failed: {e}")
+        print("⚠️  Will retry when bot starts trading...")
+
         logger.info("✅ Exchange connected")
         
         # Initialize PairEngine
@@ -196,6 +206,16 @@ def api_balance():
         
         config = load_config()
         exchange = build_exchange(config)
+    # Test Bitget connection
+    print("🔄 Testing Bitget connection...")
+    try:
+        balance = exchange.fetch_balance()
+        usdt_balance = balance.get('USDT', {}).get('free', 0)
+        print(f"✅ Bitget connected! USDT Balance: {usdt_balance}")
+    except Exception as e:
+        print(f"⚠️  Connection test failed: {e}")
+        print("⚠️  Will retry when bot starts trading...")
+
         
         balance = exchange.fetch_balance()
         usdt_balance = balance.get('total', {}).get('USDT', 0)
@@ -290,6 +310,16 @@ def api_balance():
         
         config = load_config()
         exchange = build_exchange(config)
+    # Test Bitget connection
+    print("🔄 Testing Bitget connection...")
+    try:
+        balance = exchange.fetch_balance()
+        usdt_balance = balance.get('USDT', {}).get('free', 0)
+        print(f"✅ Bitget connected! USDT Balance: {usdt_balance}")
+    except Exception as e:
+        print(f"⚠️  Connection test failed: {e}")
+        print("⚠️  Will retry when bot starts trading...")
+
         
         # Fetch real balance
         balance = exchange.fetch_balance()
