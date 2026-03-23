@@ -127,7 +127,9 @@ class PairTrader:
     def _calc_qty(self, price):
         """Calculate position size based on risk settings"""
         try:
-            balance = self.exchange.fetch_balance({"type": "swap"})
+            bal = self.exchange.fetch_balance({"type": "swap"})
+            balance = float(bal.get("USDT", {}).get("free", 0) or 0)
+            logger.info(f"[PairTrader] Balance: {balance} USDT")
             risk_pct = float(self.config.get('BOT_RISK_PCT', '10.0'))
             max_pos_usd = float(self.config.get('BOT_MAX_POS_USD', '3.0'))
             
