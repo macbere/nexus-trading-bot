@@ -61,11 +61,12 @@ class PairTrader:
             if signal in ['STRONG_BUY', 'BUY']:
                 direction = 'LONG'
             elif signal in ['STRONG_SELL', 'SELL']:
-                direction = 'SHORT'
+            elif score >= self.min_trade_score:
+                direction = "LONG"
+                logger.info(f"[PairTrader] {self.symbol} - Neutral but score OK, defaulting LONG")
             else:
-                logger.info(f"[PairTrader] {self.symbol} - Neutral signal")
+                logger.info(f"[PairTrader] {self.symbol} - Neutral signal, skipping")
                 return False
-            
             # Calculate quantity
             qty = self._calc_qty(current_price)
             if not qty or qty <= 0:
