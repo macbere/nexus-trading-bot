@@ -23,7 +23,7 @@ class PairEngine:
                 return False
             for pair in top_pairs:
                 if pair not in self.traders:
-                    self.traders[pair] = PairTrader(pair, self.exchange, self.config)
+                    self.traders[pair] = PairTrader(pair, self.config, self.exchange)
                 self.traders[pair].trade()
                 time.sleep(2)
             return True
