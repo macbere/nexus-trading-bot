@@ -1,12 +1,17 @@
 """Minimal Trading Bot - Get it working first"""
 import os
 import time
+import json
 import logging
+import threading
 import pandas as pd
 from flask import Flask, render_template, request, jsonify
 
 # Setup logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 # Flask app for Render
@@ -14,404 +19,79 @@ app = Flask(__name__, static_folder="dashboard/static", static_url_path="/static
 
 @app.route('/ping')
 def ping():
-    """Lightweight ping for keep-alive"""
     return {"status": "pong", "timestamp": time.time()}
-
-
 
 @app.route('/')
 def home():
-    """Home endpoint"""
-    return {
-        "status": "Trading Bot is Running! 🚀",
-        "endpoints": {
-            "/": "Home",
-            "/status": "Bot status",
-            "/pairs": "Trading pairs info",
-            "/stats": "Bot statistics"
-        }
-    }
+    return "Nexus Trading Bot is Running! 🚀"
 
 @app.route('/status')
 def status():
-    """Bot health check"""
-    return {
-        "status": "healthy",
-        "bot": "running",
-        "timestamp": "active"
-    }
-
-@app.route('/pairs')
-def get_pairs():
-    """Get current trading pairs info"""
-    return {
-        "tracked_pairs": 50,
-        "max_open_positions": 5,
-        "scan_limit": 50,
-        "status": "active",
-        "test_run": "48 hours"
-    }
-
-@app.route('/stats')
-def get_stats():
-    """Get bot statistics"""
-    return {
-        "bot_status": "running",
-        "configuration": {
-            "pairs_scanned": 50,
-            "max_open": 5,
-            "test_run": "48 hours",
-            "ml_enabled": True,
-            "pattern_recognition": True
-        },
-        "performance": {
-            "note": "Check Render logs for live stats"
-        }
-    }
-
-
-def home():
-    return "Trading Bot is Running! 🚀"
-
-def status():
     return {"status": "healthy", "timestamp": time.time()}
 
+def self_ping_loop():
+    """Keep Render instance awake by pinging every 14 minutes"""
+    import urllib.request
+    import ssl
+    while True:
+        try:
+            url = os.environ.get('RENDER_EXTERNAL_URL', 'http://localhost:8000')
+            if url and url != 'http://localhost:8000':
+                context = ssl._create_unverified_context()
+                urllib.request.urlopen(f"{url}/ping", context=context, timeout=10)
+                logger.info("🔄 Self-ping sent")
+        except Exception as e:
+            logger.debug(f"Ping error (expected on first run): {e}")
+        time.sleep(840)  # 14 minutes
 def run_bot():
-    """Full trading bot with PairEngine"""
-    logger.info("✅ Bot starting...")
-    
+    """Main bot loop - loads config, connects to Bitget, scans & trades"""
     try:
         # Load config
-        from bot.config_loader import load_config
-        config = load_config()
-        logger.info("✅ Config loaded")        
-        # Build exchange
+        with open('config.json', 'r') as f:
+            config = json.load(f)
+        logger.info("✅ Config loaded")
+        
+        # Build exchange (Bitget futures)
         from bot.exchange_factory import build_exchange
         exchange = build_exchange(config)
-    
-    # Test Bitget connection
-    print("🔄 Testing Bitget connection...")
-    try:
-        balance = exchange.fetch_balance()
-        usdt_balance = balance.get('USDT', {}).get('free', 0)
-        print(f"✅ Bitget connected! USDT Balance: {usdt_balance}")
-    except Exception as e:
-        print(f"⚠️  Connection test failed: {e}")
-        print("⚠️  Will retry when bot starts trading...")
-    
-
-        logger.info("✅ Exchange connected")
+        logger.info("✅ Exchange initialized")
         
         # Initialize PairEngine
         from bot.pair_engine import PairEngine
         engine = PairEngine(config, exchange)
         logger.info("✅ PairEngine initialized")
         
-        logger.info("🎉 Bot is running! Scanning markets...")
-        
         # Main trading loop
+        poll_seconds = config.get('BOT_POLL_SECONDS', 60)
+        logger.info(f"🎉 Bot running! Scanning every {poll_seconds}s")
+        
         while True:
             try:
-                # Scan and trade
                 engine.scan_and_trade()
-                
-                # Wait before next scan
-                poll_seconds = int(config.get('BOT_POLL_SECONDS', '60'))
-                logger.info(f"⏳ Waiting {poll_seconds}s before next scan...")
                 time.sleep(poll_seconds)
-                
             except KeyboardInterrupt:
-                logger.info("👋 Bot shutting down...")
+                logger.info("🛑 Bot stopped by user")
                 break
             except Exception as e:
-                logger.error(f"❌ Error in trading loop: {e}")
-                import traceback
-                logger.error(traceback.format_exc())
-                time.sleep(60)
+                logger.error(f"❌ Loop error: {e}")
+                time.sleep(10)
                 
     except Exception as e:
-        logger.error(f"❌ Bot initialization error: {e}")
+        logger.error(f"❌ Bot startup failed: {e}")
         import traceback
-        logger.error(traceback.format_exc())
-
-# For Render - run web server and bot
-
-
-def get_pairs():
-    """Get current trading pairs info"""
-    return {
-        "tracked_pairs": 50,
-        "max_open_positions": 5,
-        "scan_limit": 50,
-        "status": "active"
-    }
-
-def get_stats():
-    """Get bot statistics"""
-    return {
-        "bot_status": "running",
-        "configuration": {
-            "pairs_scanned": 50,
-            "max_open": 5,
-            "test_run": "48 hours"
-        }
-    }
-
-
-
-import threading
-import requests
-import time
-
-def self_ping_loop():
-    """Self-ping to keep bot alive (backup)"""
-    bot_url = "https://nexus-trading-bot.onrender.com"
-    
-    while True:
-        try:
-            # Ping every 10 minutes
-            time.sleep(600)
-            requests.get(f"{bot_url}/ping", timeout=5)
-            logger.info("❤️  Self-ping sent")
-        except Exception as e:
-            logger.warning(f"Self-ping failed: {e}")
-
-# Start self-ping in background thread
-
-# Dashboard Routes
-@app.route('/dashboard')
-def dashboard():
-    """Main dashboard page"""
-    return render_template('dashboard.html')
-
-@app.route('/api/stats')
-def api_stats():
-    """Get bot statistics"""
-    return {
-        "daily_pnl": 0.00,
-        "daily_pnl_percent": 0.00,
-        "win_rate": 0.0,
-        "wins": 0,
-        "losses": 0,
-        "active_positions": 0,
-        "max_positions": 5,
-        "trades_today": 0,
-        "logs": []
-    }
-
-@app.route('/api/balance')
-def api_balance():
-    """Get REAL account balance from Bitget"""
-    try:
-        from bot.exchange_factory import build_exchange
-        from bot.config_loader import load_config
-        
-        config = load_config()
-        exchange = build_exchange(config)
-    
-    # Test Bitget connection
-    print("🔄 Testing Bitget connection...")
-    try:
-        balance = exchange.fetch_balance()
-        usdt_balance = balance.get('USDT', {}).get('free', 0)
-        print(f"✅ Bitget connected! USDT Balance: {usdt_balance}")
-    except Exception as e:
-        print(f"⚠️  Connection test failed: {e}")
-        print("⚠️  Will retry when bot starts trading...")
-    
-
-        
-        balance = exchange.fetch_balance()
-        usdt_balance = balance.get('total', {}).get('USDT', 0)
-        usdt_free = balance.get('free', {}).get('USDT', 0)
-        usdt_used = balance.get('used', {}).get('USDT', 0)
-        
-        return {
-            "total": float(usdt_balance),
-            "available": float(usdt_free),
-            "in_use": float(usdt_used),
-            "currency": "USDT"
-        }
-        
-    except Exception as e:
-        logger.error(f"Error fetching balance: {e}")
-        return {
-            "total": 0.00,
-            "available": 0.00,
-            "in_use": 0.00,
-            "currency": "USDT",
-            "error": str(e)
-        }
-
-def api_balance():
-    """Get account balance"""
-    return {
-        "total": 24.44,
-        "available": 24.44,
-        "in_use": 0.00,
-        "currency": "USDT"
-    }
-
-@app.route('/api/trades/open')
-def api_open_trades():
-    """Get open positions"""
-    return []  # Will be populated with real data
-
-@app.route('/api/trades/close', methods=['POST'])
-def api_close_trade():
-    """Close a position"""
-    data = request.get_json() or {}
-    return {"success": True, "message": f"Closing {data.get('trade_id', 'position')}"}
-
-@app.route('/api/settings', methods=['POST'])
-def api_save_settings():
-    """Save bot settings"""
-    data = request.get_json() or {}
-    return {"success": True, "message": "Settings saved"}
-
-@app.route('/api/emergency-stop', methods=['POST'])
-def api_emergency_stop():
-    """Emergency stop all trading"""
-    return {"success": True, "message": "Emergency stop initiated - closing all positions"}
-
-
-
-@app.route('/api/analytics')
-def api_analytics():
-    """Get analytics data for charts"""
-    return {
-        "pnl_history": [],
-        "equity_history": [],
-        "wins": 0,
-        "losses": 0,
-        "total_profit": 0.00,
-        "best_trade": 0.00,
-        "worst_trade": 0.00,
-        "avg_win": 0.00,
-        "avg_loss": 0.00,
-        "profit_factor": 0.00,
-        "sharpe_ratio": 0.00,
-        "max_drawdown": 0.00,
-        "total_trades": 0
-    }
-
-@app.route('/api/trades/history')
-def api_trade_history():
-    """Get trade history"""
-    try:
-        # TODO: Fetch from database
-        return []
-    except Exception as e:
-        logger.error(f"Error fetching trade history: {e}")
-        return []
-
-
-def api_balance():
-    """Get REAL account balance from Bitget"""
-    try:
-        from bot.exchange_factory import build_exchange
-        from bot.config_loader import load_config
-        
-        config = load_config()
-        exchange = build_exchange(config)
-    
-    # Test Bitget connection
-    print("🔄 Testing Bitget connection...")
-    try:
-        balance = exchange.fetch_balance()
-        usdt_balance = balance.get('USDT', {}).get('free', 0)
-        print(f"✅ Bitget connected! USDT Balance: {usdt_balance}")
-    except Exception as e:
-        print(f"⚠️  Connection test failed: {e}")
-        print("⚠️  Will retry when bot starts trading...")
-    
-
-        
-        # Fetch real balance
-        balance = exchange.fetch_balance()
-        
-        usdt_total = balance.get('total', {}).get('USDT', 0)
-        usdt_free = balance.get('free', {}).get('USDT', 0)
-        usdt_used = balance.get('used', {}).get('USDT', 0)
-        
-        logger.info(f"Balance fetched: Total={usdt_total}, Free={usdt_free}, Used={usdt_used}")
-        
-        return {
-            "total": float(usdt_total),
-            "available": float(usdt_free),
-            "in_use": float(usdt_used),
-            "currency": "USDT"
-        }
-        
-    except Exception as e:
-        logger.error(f"Error fetching balance: {e}")
-        import traceback
-        logger.error(traceback.format_exc())
-        return {
-            "total": 0.00,
-            "available": 0.00,
-            "in_use": 0.00,
-            "currency": "USDT",
-            "error": str(e)
-        }
-
-def api_analytics():
-    """Get analytics data for charts"""
-    try:
-        # TODO: Fetch from database when we have trades
-        return {
-            "pnl_history": [],
-            "equity_history": [],
-            "wins": 0,
-            "losses": 0,
-            "total_profit": 0.00,
-            "best_trade": 0.00,
-            "worst_trade": 0.00,
-            "avg_win": 0.00,
-            "avg_loss": 0.00,
-            "profit_factor": 0.00,
-            "sharpe_ratio": 0.00,
-            "max_drawdown": 0.00,
-            "total_trades": 0
-        }
-    except Exception as e:
-        logger.error(f"Error fetching analytics: {e}")
-        return {
-            "pnl_history": [],
-            "equity_history": [],
-            "wins": 0,
-            "losses": 0,
-            "total_profit": 0.00,
-            "best_trade": 0.00,
-            "worst_trade": 0.00,
-            "avg_win": 0.00,
-            "avg_loss": 0.00,
-            "profit_factor": 0.00,
-            "sharpe_ratio": 0.00,
-            "max_drawdown": 0.00,
-            "total_trades": 0
-        }
-
-def api_trade_history():
-    """Get trade history"""
-    try:
-        # TODO: Fetch from database
-        return []
-    except Exception as e:
-        logger.error(f"Error fetching trade history: {e}")
-        return []
-
+        traceback.print_exc()
 
 if __name__ == "__main__":
-    # Start self-ping thread
+    logger.info("🚀 Starting Nexus Trading Bot...")
+    
+    # Start self-ping thread (keep Render awake)
     ping_thread = threading.Thread(target=self_ping_loop, daemon=True)
     ping_thread.start()
     
-    # Start bot
-    import threading
+    # Start bot thread
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     
-    # Run web server
-    port = int(os.environ.get('PORT', 8000))
+    # Run Flask server    port = int(os.environ.get('PORT', 8000))
+    logger.info(f"🌐 Web server listening on port {port}")
     app.run(host='0.0.0.0', port=port)
