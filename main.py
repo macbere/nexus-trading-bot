@@ -87,16 +87,17 @@ def run_bot():
         logger.info("✅ Config loaded")        
         # Build exchange
         from bot.exchange_factory import build_exchange
-        exchange = build_exchange(config))
-
+        exchange = build_exchange(config)
+    
     # Test Bitget connection
     print("🔄 Testing Bitget connection...")
     try:
         balance = exchange.fetch_balance()
-        usdt = balance.get("USDT", {}).get("free", 0)
-        print(f"✅ Bitget connected! USDT: {usdt}")
+        usdt_balance = balance.get('USDT', {}).get('free', 0)
+        print(f"✅ Bitget connected! USDT Balance: {usdt_balance}")
     except Exception as e:
-        print(f"⚠️  Connection test: {e}")
+        print(f"⚠️  Connection test failed: {e}")
+        print("⚠️  Will retry when bot starts trading...")
     
 
         logger.info("✅ Exchange connected")
@@ -206,16 +207,17 @@ def api_balance():
         from bot.config_loader import load_config
         
         config = load_config()
-        exchange = build_exchange(config))
-
+        exchange = build_exchange(config)
+    
     # Test Bitget connection
     print("🔄 Testing Bitget connection...")
     try:
         balance = exchange.fetch_balance()
-        usdt = balance.get("USDT", {}).get("free", 0)
-        print(f"✅ Bitget connected! USDT: {usdt}")
+        usdt_balance = balance.get('USDT', {}).get('free', 0)
+        print(f"✅ Bitget connected! USDT Balance: {usdt_balance}")
     except Exception as e:
-        print(f"⚠️  Connection test: {e}")
+        print(f"⚠️  Connection test failed: {e}")
+        print("⚠️  Will retry when bot starts trading...")
     
 
         
@@ -311,16 +313,17 @@ def api_balance():
         from bot.config_loader import load_config
         
         config = load_config()
-        exchange = build_exchange(config))
-
+        exchange = build_exchange(config)
+    
     # Test Bitget connection
     print("🔄 Testing Bitget connection...")
     try:
         balance = exchange.fetch_balance()
-        usdt = balance.get("USDT", {}).get("free", 0)
-        print(f"✅ Bitget connected! USDT: {usdt}")
+        usdt_balance = balance.get('USDT', {}).get('free', 0)
+        print(f"✅ Bitget connected! USDT Balance: {usdt_balance}")
     except Exception as e:
-        print(f"⚠️  Connection test: {e}")
+        print(f"⚠️  Connection test failed: {e}")
+        print("⚠️  Will retry when bot starts trading...")
     
 
         
