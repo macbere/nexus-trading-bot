@@ -90,7 +90,9 @@ class PairTrader:
                 return False
                 
         except Exception as e:
+            import traceback
             logger.error(f"[PairTrader] {self.symbol} trade error: {e}")
+            logger.error(traceback.format_exc())
             return False
     
     def _calculate_tp_sl(self, price: float, direction: str) -> tuple:
