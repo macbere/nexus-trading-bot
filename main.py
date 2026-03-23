@@ -88,6 +88,7 @@ def run_bot():
         # Build exchange
         from bot.exchange_factory import build_exchange
         exchange = build_exchange(config)
+    
     # Test Bitget connection
     print("🔄 Testing Bitget connection...")
     try:
@@ -97,6 +98,7 @@ def run_bot():
     except Exception as e:
         print(f"⚠️  Connection test failed: {e}")
         print("⚠️  Will retry when bot starts trading...")
+    
 
         logger.info("✅ Exchange connected")
         
@@ -206,6 +208,7 @@ def api_balance():
         
         config = load_config()
         exchange = build_exchange(config)
+    
     # Test Bitget connection
     print("🔄 Testing Bitget connection...")
     try:
@@ -215,6 +218,7 @@ def api_balance():
     except Exception as e:
         print(f"⚠️  Connection test failed: {e}")
         print("⚠️  Will retry when bot starts trading...")
+    
 
         
         balance = exchange.fetch_balance()
@@ -310,6 +314,7 @@ def api_balance():
         
         config = load_config()
         exchange = build_exchange(config)
+    
     # Test Bitget connection
     print("🔄 Testing Bitget connection...")
     try:
@@ -319,6 +324,7 @@ def api_balance():
     except Exception as e:
         print(f"⚠️  Connection test failed: {e}")
         print("⚠️  Will retry when bot starts trading...")
+    
 
         
         # Fetch real balance
