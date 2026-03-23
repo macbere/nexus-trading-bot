@@ -23,7 +23,7 @@ class PairEngine:
         
         if symbol_str not in self.traders:
             from bot.pair_trader import PairTrader
-            self.traders[symbol_str] = PairTrader(symbol_str, self.config, self.exchange)
+            self.traders[symbol_str] = PairTrader(symbol_str, self.exchange, self.config)
         return self.traders[symbol_str]
     
     def count_open(self):
