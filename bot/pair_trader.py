@@ -43,13 +43,20 @@ class PairTrader:
                 logger.info(f"[PairTrader] {self.symbol} - Neutral signal, skipping")
                 return False
 
-            # Validate symbol exists
+            # Validate symbol and fetch ticker safely
             markets = self.exchange.markets
             if self.symbol not in markets:
                 logger.warning(f"[PairTrader] {self.symbol} not in markets, skipping")
                 return False
-            ticker = self.exchange.fetch_ticker(self.symbol)
-            current_price = ticker["last"]
+            try:
+                ticker = self.exchange.fetch_ticker(self.symbol)
+                if not ticker or "last" not in ticker or not ticker["last"]:
+                    logger.warning(f"[PairTrader] {self.symbol} invalid ticker data, skipping")
+                    return False
+                current_price = ticker["last"]
+            except Exception as te:
+                logger.warning(f"[PairTrader] {self.symbol} fetch_ticker failed: {te}, skipping")
+                return False
 
             qty = self._calc_qty(current_price)
             if not qty or qty <= 0:
