@@ -1,106 +1,148 @@
-"""Multi-Timeframe Analysis Module"""
+"""Multi-Timeframe Analysis Module - Fixed & Direct API"""
 import pandas as pd
+from typing import Dict, Optional
 import time
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class MultiTimeframeAnalyzer:
-    def __init__(self, exchange, config):
-        self.exchange = exchange
-        self.config = config
-        self.timeframes = ["15m", "1h", "4h", "1d"]
+    """Multi-timeframe analysis for trading signals"""
 
-    def analyze_all_timeframes(self, symbol):
+    def __init__(self, exchange, config):
+        """Initialize MTF analyzer - exchange is now config dict"""
+        self.exchange = exchange  # This is now the config dict
+        self.config = config
+        self.timeframes = ['15m', '1h', '4h']
+
+    def analyze_all_timeframes(self, symbol: str) -> Optional[Dict]:
+        """Analyze all timeframes for a symbol"""
         try:
             results = {}
             for tf in self.timeframes:
                 result = self.analyze_timeframe(symbol, tf)
                 if result:
                     results[tf] = result
-                time.sleep(0.5)
-            if results:
-                return self.combine_timeframe_results(results)
-            return None
+                time.sleep(0.3)
+
+            if not results:
+                return None
+
+            combined = self.combine_timeframe_results(results)
+            return combined
         except Exception as e:
-            print(f"Error analyzing {symbol}: {e}")
+            logger.error(f"[MTF] Error analyzing {symbol}: {e}")
             return None
 
-    def analyze_timeframe(self, symbol, timeframe):
+    def analyze_timeframe(self, symbol: str, timeframe: str) -> Optional[Dict]:
+        """Analyze a single timeframe using direct API"""
         try:
-            ohlcv = self.exchange.fetch_ohlcv(symbol, timeframe, limit=100)
+            from bot.exchange_factory import fetch_ohlcv_direct
+            ohlcv = fetch_ohlcv_direct(symbol, timeframe, limit=100)
             if not ohlcv or len(ohlcv) < 20:
                 return None
-            df = pd.DataFrame(ohlcv, columns=["timestamp","open","high","low","close","volume"])
+
+            df = pd.DataFrame(
+                ohlcv,
+                columns=['timestamp', 'open', 'high', 'low', 'close', 'volume']
+            )
             df = self.calculate_indicators(df)
             signal = self.get_signal(df)
-            return {"timeframe": timeframe, "signal": signal}
+
+            return {
+                'timeframe': timeframe,
+                'signal': signal,
+                'indicators': {
+                    'rsi': float(df['rsi'].iloc[-1]) if 'rsi' in df.columns else 50,
+                    'macd': float(df['macd'].iloc[-1]) if 'macd' in df.columns else 0,
+                }
+            }
         except Exception as e:
-            print(f"Error {symbol} {timeframe}: {e}")
+            logger.error(f"[MTF] Error analyzing {symbol} {timeframe}: {e}")
             return None
 
-    def calculate_indicators(self, df):
-        delta = df["close"].diff()
-        gain = delta.where(delta > 0, 0).rolling(14).mean()
-        loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
-        df["rsi"] = 100 - (100 / (1 + gain / loss))
-        exp1 = df["close"].ewm(span=12, adjust=False).mean()
-        exp2 = df["close"].ewm(span=26, adjust=False).mean()
-        df["macd"] = exp1 - exp2
-        df["macd_signal"] = df["macd"].ewm(span=9, adjust=False).mean()
+    def calculate_indicators(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Calculate RSI and MACD indicators"""
+        try:
+            delta = df['close'].diff()
+            gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
+            loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
+            rs = gain / loss
+            df['rsi'] = 100 - (100 / (1 + rs))
+
+            exp1 = df['close'].ewm(span=12, adjust=False).mean()
+            exp2 = df['close'].ewm(span=26, adjust=False).mean()
+            df['macd'] = exp1 - exp2
+            df['macd_signal'] = df['macd'].ewm(span=9, adjust=False).mean()
+        except Exception as e:
+            logger.error(f"[MTF] Indicator calculation error: {e}")
+
         return df
 
-    def get_signal(self, df):
+    def get_signal(self, df: pd.DataFrame) -> str:
+        """Get trading signal from indicators"""
         try:
-            rsi = df["rsi"].iloc[-1]
-            macd = df["macd"].iloc[-1]
-            ms = df["macd_signal"].iloc[-1]
-            if rsi < 30 and macd > ms:
-                return "STRONG_BUY"
-            if rsi < 40 or (macd > ms and rsi < 50):
-                return "BUY"
-            if rsi > 70 and macd < ms:
-                return "STRONG_SELL"
-            if rsi > 60 or (macd < ms and rsi > 50):
-                return "SELL"
-            return "NEUTRAL"
-        except:
-            return "NEUTRAL"
+            rsi = float(df['rsi'].iloc[-1])
+            macd = float(df['macd'].iloc[-1])
+            macd_signal = float(df['macd_signal'].iloc[-1])
 
-    def combine_timeframe_results(self, results):
-        try:
-            signals = [d.get("signal","NEUTRAL") for d in results.values()]
-            buys = sum(1 for s in signals if s in ["BUY","STRONG_BUY"])
-            sells = sum(1 for s in signals if s in ["SELL","STRONG_SELL"])
-            total = len(signals)
-            if buys >= total * 0.6:
-                sig = "BUY"
-            elif sells >= total * 0.6:
-                sig = "SELL"
-            else:
-                sig = "NEUTRAL"
-            return {"signal": sig, "score": 50, "timeframe_signals": results}
+            if rsi < 30 and macd > macd_signal:
+                return 'STRONG_BUY'
+            if rsi < 40 or (macd > macd_signal and rsi < 50):
+                return 'BUY'
+            if rsi > 70 and macd < macd_signal:
+                return 'STRONG_SELL'
+            if rsi > 60 or (macd < macd_signal and rsi > 50):
+                return 'SELL'
+
+            return 'NEUTRAL'
         except Exception as e:
-            return {"signal": "NEUTRAL", "score": 50, "timeframe_signals": results}
+            logger.error(f"[MTF] Signal error: {e}")
+            return 'NEUTRAL'
 
-    def check_momentum_alignment(self, results):
-        signals = [d.get("signal","NEUTRAL") for d in results.values()]
-        buys = sum(1 for s in signals if s in ["BUY","STRONG_BUY"])
-        sells = sum(1 for s in signals if s in ["SELL","STRONG_SELL"])
+    def combine_timeframe_results(self, results: Dict) -> Dict:
+        """Combine results from all timeframes"""
+        try:
+            signals = [data.get('signal', 'NEUTRAL') for data in results.values()]
+            buy_count = sum(1 for s in signals if s in ['BUY', 'STRONG_BUY'])
+            sell_count = sum(1 for s in signals if s in ['SELL', 'STRONG_SELL'])
+            total = len(signals)
+
+            if buy_count >= total * 0.6:
+                overall_signal = 'BUY'
+            elif sell_count >= total * 0.6:
+                overall_signal = 'SELL'
+            else:
+                overall_signal = 'NEUTRAL'
+
+            score = 50
+            if overall_signal == 'BUY':
+                score = 50 + (buy_count / total) * 50
+            elif overall_signal == 'SELL':
+                score = 50 - (sell_count / total) * 50
+
+            return {
+                'signal': overall_signal,
+                'score': score,
+                'timeframe_signals': results,
+                'details': {
+                    'buy_count': buy_count,
+                    'sell_count': sell_count,
+                    'total': total,
+                    'momentum_alignment': buy_count >= 3 or sell_count >= 3
+                }
+            }
+        except Exception as e:
+            logger.error(f"[MTF] Combine error: {e}")
+            return {'signal': 'NEUTRAL', 'score': 50, 'timeframe_signals': results}
+
+    def check_momentum_alignment(self, results: Dict) -> bool:
+        """Check if momentum aligns across timeframes"""
+        if len(results) < 2:
+            return False
+        signals = [data.get('signal', 'NEUTRAL') for data in results.values()]
+        buy_signals = sum(1 for s in signals if s in ['BUY', 'STRONG_BUY'])
+        sell_signals = sum(1 for s in signals if s in ['SELL', 'STRONG_SELL'])
         total = len(signals)
-        return (buys >= total * 0.6) or (sells >= total * 0.6)
-
-
-def get_top_pairs(config=None, limit=50):
-    try:
-        from bot.config_loader import load_config
-        from bot.exchange_factory import build_exchange
-        from bot.market_scanner import MarketScanner
-        if config is None:
-            config = load_config()
-        exchange = build_exchange(config)
-        scanner = MarketScanner(config, exchange)
-        pairs = scanner.scan_all_markets()
-        if pairs:
-            return pairs[:limit]
-        return []
-    except Exception as e:
-        print(f"Error in get_top_pairs: {e}")
-        return []
+        return (buy_signals >= total * 0.6) or (sell_signals >= total * 0.6)
