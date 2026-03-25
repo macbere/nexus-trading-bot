@@ -160,7 +160,7 @@ class PairTrader:
             risk_usd = min(balance * (risk_pct / 100), max_pos_usd)
 
             # Enforce minimum order value of 5 USDT notional
-            min_notional = 5.0
+            min_notional = 6.0
             if risk_usd < min_notional:
                 logger.warning(
                     f"[PairTrader] Risk amount ${risk_usd:.4f} below "
@@ -173,7 +173,9 @@ class PairTrader:
                 f"[PairTrader] Balance: {balance:.4f} USDT | "
                 f"Risk: ${risk_usd:.4f} | Qty: {qty:.6f}"
             )
-            return round(qty, 4)
+            import math
+            qty = math.ceil(qty * 100) / 100  # Always round UP
+            return qty
         except Exception as e:
             logger.error(f"[PairTrader] Error calculating qty: {e}")
             return 0
