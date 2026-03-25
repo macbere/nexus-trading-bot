@@ -19,7 +19,7 @@
     "BOT_RISK_PCT": "15.0",
     "BOT_SL_PCT": "1.5",
     "BOT_TP_PCT": "3.0",
-    "BOT_MAX_POS_USD": "5.0",
+    "BOT_MAX_POS_USD": "4.0",
     "BOT_MAX_DAILY_LOSS_USD": "2.0",
     "BOT_MAX_ERRORS": "50",
     "BOT_BB_PERIOD": "20",
@@ -36,7 +36,7 @@
     "BOT_RSI_OVERBOUGHT": "70",
     "BOT_TAKE_PROFIT_PCT": "2.5",
     "BOT_STOP_LOSS_PCT": "1.5",
-    "BOT_MAX_OPEN_POSITIONS": 2,
+    "BOT_MAX_OPEN_POSITIONS": 3,
     "MARKET_SCANNER_TOP_PAIRS_LIMIT": 50,
     "MIN_TRADE_SCORE": 20
 }
