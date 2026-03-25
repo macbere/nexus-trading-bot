@@ -1,176 +1,181 @@
-"""Pair Trader - Complete unified trading execution"""
+"""
+NEXUS Pair Trader - Final Production Version
+- Uses scanner scores directly
+- Correct LONG/SHORT direction based on RSI
+- Auto TP/SL on every trade
+- Trailing stop compatible
+"""
 import time
+import math
 import logging
 import requests
-import math
 
 logger = logging.getLogger(__name__)
 
 
 class PairTrader:
-    """Executes trades for a single trading pair using scanner scores"""
 
-    def __init__(self, symbol, config, exchange):
+    def __init__(self, symbol, config, exchange=None):
         self.symbol = symbol
         self.config = config
-        self.exchange = config
         self.last_trade_time = 0
-        self.min_trade_score = float(config.get("MIN_TRADE_SCORE", 20))
-        cooldown_min = float(config.get("BOT_TRADE_COOLDOWN_MIN", 10))
-        self.cooldown_seconds = cooldown_min * 60
+        self.min_score = float(config.get("MIN_TRADE_SCORE", 20))
+        self.cooldown_secs = float(
+            config.get("BOT_TRADE_COOLDOWN_MIN", 10)
+        ) * 60
 
-    def _symbol_to_bitget(self, symbol):
-        """Convert BTC/USDT:USDT -> BTCUSDT"""
-        return symbol.replace(":USDT", "").replace("/", "")
-
+    # ----------------------------------------------------------
+    # PRICE FETCH
+    # ----------------------------------------------------------
     def _get_price(self):
-        """Fetch current price via direct Bitget REST API"""
         try:
-            raw = self._symbol_to_bitget(self.symbol)
+            raw = self.symbol.replace(":USDT", "").replace("/", "")
             url = (
-                f"https://api.bitget.com/api/v2/mix/market/ticker"
+                "https://api.bitget.com/api/v2/mix/market/ticker"
                 f"?symbol={raw}&productType=USDT-FUTURES"
             )
-            resp = requests.get(url, timeout=10)
-            data = resp.json()
-            if data.get("code") != "00000" or not data.get("data"):
-                logger.warning(
-                    f"[PairTrader] {self.symbol} price fetch failed: "
-                    f"{data.get('msg')}"
-                )
-                return None
-            price = float(data["data"][0].get("lastPr", 0))
-            if not price:
-                return None
-            return price
+            r = requests.get(url, timeout=10).json()
+            if r.get("code") == "00000" and r.get("data"):
+                p = float(r["data"][0].get("lastPr", 0))
+                return p if p > 0 else None
+            logger.warning(f"[Trader] {self.symbol} price error: {r.get('msg')}")
+            return None
         except Exception as e:
-            logger.error(f"[PairTrader] {self.symbol} price error: {e}")
+            logger.error(f"[Trader] {self.symbol} price fetch failed: {e}")
             return None
 
+    # ----------------------------------------------------------
+    # RSI CALCULATION for direction
+    # ----------------------------------------------------------
+    def _get_rsi(self):
+        try:
+            from bot.exchange_factory import fetch_ohlcv_direct
+            import pandas as pd
+            ohlcv = fetch_ohlcv_direct(self.symbol, "1m", limit=50)
+            if not ohlcv or len(ohlcv) < 20:
+                return 50  # Neutral default
+            df = pd.DataFrame(
+                ohlcv,
+                columns=["ts","open","high","low","close","volume"]
+            )
+            close = df["close"].astype(float)
+            delta = close.diff()
+            gain = delta.where(delta > 0, 0).rolling(14).mean()
+            loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
+            rs = gain / loss
+            rsi = float((100 - (100 / (1 + rs))).iloc[-1])
+            return round(rsi, 1)
+        except Exception as e:
+            logger.error(f"[Trader] RSI error: {e}")
+            return 50
+
+    # ----------------------------------------------------------
+    # POSITION SIZE
+    # ----------------------------------------------------------
     def _calc_qty(self, price):
-        """Calculate position size based on balance and risk settings"""
         try:
             from bot.exchange_factory import get_balance
             bal = get_balance(self.config)
-            balance = float(bal.get("free", 0))
+            free = float(bal.get("free", 0))
             risk_pct = float(self.config.get("BOT_RISK_PCT", "15.0"))
-            max_pos_usd = float(self.config.get("BOT_MAX_POS_USD", "4.0"))
-            risk_usd = min(balance * (risk_pct / 100), max_pos_usd)
-
-            # Enforce Bitget minimum $5 notional with buffer
-            min_notional = 6.0
-            if risk_usd < min_notional:
-                logger.warning(
-                    f"[PairTrader] Risk ${risk_usd:.4f} below minimum "
-                    f"${min_notional}, using minimum"
-                )
-                risk_usd = min_notional
-
-            qty = risk_usd / price if price > 0 else 0
-            qty = math.ceil(qty * 100) / 100  # Always round up
-
+            max_usd = float(self.config.get("BOT_MAX_POS_USD", "4.0"))
+            risk_usd = min(free * risk_pct / 100, max_usd)
+            if risk_usd < 6.0:
+                risk_usd = 6.0
+            qty = math.ceil((risk_usd / price) * 1000) / 1000
             logger.info(
-                f"[PairTrader] Balance:{balance:.4f} USDT | "
-                f"Risk:${risk_usd:.4f} | Qty:{qty:.4f}"
+                f"[Trader] {self.symbol} | Free:{free:.2f} "
+                f"Risk:${risk_usd:.2f} Qty:{qty}"
             )
             return qty
         except Exception as e:
-            logger.error(f"[PairTrader] Qty calc error: {e}")
+            logger.error(f"[Trader] qty error: {e}")
             return 0
 
-    def _place_order(self, direction, qty, current_price):
-        """Place order and immediately set TP/SL"""
+    # ----------------------------------------------------------
+    # ORDER EXECUTION
+    # ----------------------------------------------------------
+    def _execute(self, direction, price):
+        qty = self._calc_qty(price)
+        if not qty or qty <= 0:
+            return False
         try:
             from bot.exchange_factory import place_order_direct, place_tpsl_direct
-            order = place_order_direct(
-                self.config, self.symbol, direction, qty
-            )
-
+            order = place_order_direct(self.config, self.symbol, direction, qty)
             if order:
                 self.last_trade_time = time.time()
                 logger.info(
-                    f"[PairTrader] {self.symbol} ✅ ORDER SUCCESS | "
-                    f"Dir:{direction} Qty:{qty} @ {current_price}"
+                    f"[Trader] {self.symbol} ✅ {direction.upper()} "
+                    f"{qty} @ {price}"
                 )
-                # Auto TP/SL immediately
-                try:
-                    tp_pct = float(
-                        self.config.get("BOT_TP_PCT", "3.0")
-                    ) / 100
-                    sl_pct = float(
-                        self.config.get("BOT_SL_PCT", "1.5")
-                    ) / 100
-                    place_tpsl_direct(
-                        self.config, self.symbol, direction,
-                        current_price, tp_pct, sl_pct
-                    )
-                except Exception as tpsl_err:
-                    logger.error(
-                        f"[PairTrader] TP/SL error: {tpsl_err}"
-                    )
+                # Auto TP/SL
+                tp = float(self.config.get("BOT_TP_PCT", "3.0")) / 100
+                sl = float(self.config.get("BOT_SL_PCT", "1.5")) / 100
+                place_tpsl_direct(
+                    self.config, self.symbol, direction, price, tp, sl
+                )
                 return True
-            else:
-                logger.error(f"[PairTrader] {self.symbol} ❌ ORDER FAILED")
-                return False
+            logger.error(f"[Trader] {self.symbol} ❌ Order failed")
+            return False
         except Exception as e:
-            logger.error(f"[PairTrader] Order error: {e}")
+            logger.error(f"[Trader] execute error: {e}")
             return False
 
-    def trade_with_score(self, scanner_score):
+    # ----------------------------------------------------------
+    # MAIN ENTRY POINT
+    # ----------------------------------------------------------
+    def trade_with_score(self, scanner_score, rsi=None):
         """
-        Main entry point - uses scanner score directly.
-        Called by PairEngine with pre-computed score.
+        Called by PairEngine with scanner score and optional RSI.
+        Direction: RSI > 65 -> SHORT | RSI < 35 -> LONG | else -> LONG
         """
         try:
-            # Cooldown check
+            # Cooldown
             elapsed = time.time() - self.last_trade_time
-            if self.last_trade_time > 0 and elapsed < self.cooldown_seconds:
-                remaining = int((self.cooldown_seconds - elapsed) / 60)
+            if self.last_trade_time > 0 and elapsed < self.cooldown_secs:
+                mins = int((self.cooldown_secs - elapsed) / 60)
+                logger.info(f"[Trader] {self.symbol} cooldown {mins}m")
+                return False
+
+            score = float(scanner_score)
+            logger.info(f"[Trader] {self.symbol} | Score:{score:.1f}")
+
+            if score < self.min_score:
                 logger.info(
-                    f"[PairTrader] {self.symbol} in cooldown "
-                    f"({remaining}m remaining)"
+                    f"[Trader] {self.symbol} score {score:.1f} "
+                    f"< threshold {self.min_score}, skip"
                 )
                 return False
 
-            score = scanner_score
+            # Get price
+            price = self._get_price()
+            if not price:
+                return False
+
+            # Determine direction from RSI
+            if rsi is None:
+                rsi = self._get_rsi()
+
+            if rsi >= 65:
+                direction = "sell"
+                dir_label = "SHORT"
+            else:
+                direction = "buy"
+                dir_label = "LONG"
+
             logger.info(
-                f"[PairTrader] {self.symbol} | Scanner Score: {score:.1f}"
+                f"[Trader] {self.symbol} | RSI:{rsi} | "
+                f"{dir_label} @ {price} | Score:{score:.1f}"
             )
 
-            if score < self.min_trade_score:
-                logger.info(
-                    f"[PairTrader] {self.symbol} score {score:.1f} "
-                    f"below threshold {self.min_trade_score}, skipping"
-                )
-                return False
-
-            # Get current price
-            current_price = self._get_price()
-            if not current_price:
-                return False
-
-            logger.info(
-                f"[PairTrader] {self.symbol} | Price:{current_price} | "
-                f"Score:{score:.1f} -> Executing LONG"
-            )
-
-            # Calculate position size
-            qty = self._calc_qty(current_price)
-            if not qty or qty <= 0:
-                logger.warning(
-                    f"[PairTrader] {self.symbol} qty=0, skipping"
-                )
-                return False
-
-            # Execute trade
-            return self._place_order("buy", qty, current_price)
+            return self._execute(direction, price)
 
         except Exception as e:
             import traceback
-            logger.error(f"[PairTrader] {self.symbol} error: {e}")
+            logger.error(f"[Trader] {self.symbol} error: {e}")
             logger.error(traceback.format_exc())
             return False
 
     def trade(self):
-        """Legacy fallback - redirects to trade_with_score"""
-        return self.trade_with_score(self.min_trade_score + 1)
+        """Legacy fallback"""
+        return self.trade_with_score(self.min_score + 1)
