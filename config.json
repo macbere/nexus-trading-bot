@@ -17,7 +17,7 @@
     "BOT_RSI_OB": "60",
     "BOT_RSI_OS": "40",
     "BOT_RISK_PCT": "15.0",
-    "BOT_SL_PCT": "1.2",
+    "BOT_SL_PCT": "1.5",
     "BOT_TP_PCT": "3.0",
     "BOT_MAX_POS_USD": "5.0",
     "BOT_MAX_DAILY_LOSS_USD": "2.0",

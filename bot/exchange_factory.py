@@ -193,3 +193,71 @@ def place_order_direct(cfg, symbol, side, size, order_type="market"):
     except Exception as e:
         logger.error(f"[Exchange] Order placement exception: {e}")
         return None
+
+
+def place_tpsl_direct(cfg, symbol, side, entry_price, tp_pct=0.025, sl_pct=0.015):
+    """
+    Place TP/SL orders automatically after entry.
+    side: buy -> tp above, sl below
+    side: sell -> tp below, sl above
+    tp_pct: take profit % (default 2.5%)
+    sl_pct: stop loss % (default 1.5%)
+    """
+    try:
+        raw_symbol = symbol.replace(":USDT", "").replace("/", "")
+
+        if side.lower() == "buy":
+            tp_price = round(entry_price * (1 + tp_pct), 6)
+            sl_price = round(entry_price * (1 - sl_pct), 6)
+            tp_side = "sell"
+            sl_side = "sell"
+        else:
+            tp_price = round(entry_price * (1 - tp_pct), 6)
+            sl_price = round(entry_price * (1 + sl_pct), 6)
+            tp_side = "buy"
+            sl_side = "buy"
+
+        path = "/api/v2/mix/order/place-tpsl-order"
+        results = []
+
+        for order_type, trigger_price, tpsl_type in [
+            ("tp", tp_price, "profit"),
+            ("sl", sl_price, "loss")
+        ]:
+            body = {
+                "symbol": raw_symbol,
+                "productType": "USDT-FUTURES",
+                "marginCoin": "USDT",
+                "planType": "pos_profit" if tpsl_type == "profit" else "pos_loss",
+                "triggerPrice": str(trigger_price),
+                "triggerType": "mark_price",
+                "executePrice": "0",
+                "holdSide": "long" if side.lower() == "buy" else "short",
+            }
+            body_str = json.dumps(body)
+            headers = _sign_request(cfg, "POST", path, body_str)
+            resp = requests.post(
+                f"https://api.bitget.com{path}",
+                headers=headers,
+                data=body_str,
+                timeout=10
+            )
+            result = resp.json()
+            if result.get("code") == "00000":
+                logger.info(
+                    f"[Exchange] ✅ {order_type.upper()} set: "
+                    f"{symbol} @ {trigger_price}"
+                )
+                results.append(True)
+            else:
+                logger.error(
+                    f"[Exchange] ❌ {order_type.upper()} failed: "
+                    f"{result.get('msg')}"
+                )
+                results.append(False)
+
+        return all(results)
+
+    except Exception as e:
+        logger.error(f"[Exchange] TP/SL placement error: {e}")
+        return False

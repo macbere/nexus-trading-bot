@@ -136,6 +136,17 @@ class PairTrader:
                     f"[PairTrader] {self.symbol} ✅ ORDER SUCCESS | "
                     f"Score: {score:.1f}"
                 )
+                # Automatically set TP/SL
+                try:
+                    from bot.exchange_factory import place_tpsl_direct
+                    tp_pct = float(self.config.get("BOT_TP_PCT", "3.0")) / 100
+                    sl_pct = float(self.config.get("BOT_SL_PCT", "1.5")) / 100
+                    place_tpsl_direct(
+                        self.config, self.symbol, direction,
+                        current_price, tp_pct, sl_pct
+                    )
+                except Exception as tpsl_err:
+                    logger.error(f"[PairTrader] TP/SL error: {tpsl_err}")
                 return True
             else:
                 logger.error(
