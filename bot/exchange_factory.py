@@ -206,14 +206,25 @@ def place_tpsl_direct(cfg, symbol, side, entry_price, tp_pct=0.025, sl_pct=0.015
     try:
         raw_symbol = symbol.replace(":USDT", "").replace("/", "")
 
+        # Round to 2 decimal places - safe for all Bitget pairs
+        def smart_round(price):
+            if price >= 100:
+                return round(price, 2)
+            elif price >= 1:
+                return round(price, 4)
+            elif price >= 0.01:
+                return round(price, 5)
+            else:
+                return round(price, 6)
+
         if side.lower() == "buy":
-            tp_price = round(entry_price * (1 + tp_pct), 6)
-            sl_price = round(entry_price * (1 - sl_pct), 6)
+            tp_price = smart_round(entry_price * (1 + tp_pct))
+            sl_price = smart_round(entry_price * (1 - sl_pct))
             tp_side = "sell"
             sl_side = "sell"
         else:
-            tp_price = round(entry_price * (1 - tp_pct), 6)
-            sl_price = round(entry_price * (1 + sl_pct), 6)
+            tp_price = smart_round(entry_price * (1 - tp_pct))
+            sl_price = smart_round(entry_price * (1 + sl_pct))
             tp_side = "buy"
             sl_side = "buy"
 

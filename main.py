@@ -1,4 +1,4 @@
-"""NEXUS Trading Bot - Main Entry Point"""
+"""NEXUS Trading Bot - Main Entry Point - Single Engine"""
 import os
 import time
 import json
@@ -27,51 +27,68 @@ def home():
 def status():
     return jsonify({"status": "healthy", "timestamp": time.time()})
 
+@app.route("/positions")
+def positions():
+    try:
+        import json as j
+        with open("config.json") as f:
+            cfg = j.load(f)
+        from bot.exchange_factory import build_exchange, get_positions, get_balance
+        build_exchange(cfg)
+        pos = get_positions(cfg)
+        bal = get_balance(cfg)
+        return jsonify({
+            "balance": bal,
+            "positions": pos,
+            "count": len(pos)
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
 def self_ping_loop():
-    import urllib.request
-    import ssl
+    import urllib.request, ssl
     while True:
         try:
-            url = os.environ.get("RENDER_EXTERNAL_URL", "http://localhost:8000")
-            if url and url != "http://localhost:8000":
-                context = ssl._create_unverified_context()
-                urllib.request.urlopen(f"{url}/ping", context=context, timeout=10)
+            url = os.environ.get("RENDER_EXTERNAL_URL", "")
+            if url:
+                ctx = ssl._create_unverified_context()
+                urllib.request.urlopen(f"{url}/ping", context=ctx, timeout=10)
                 logger.info("🏓 Self-ping sent")
         except Exception as e:
-            logger.debug(f"Ping error: {e}")
+            logger.debug(f"Ping: {e}")
         time.sleep(840)
 
 def run_bot():
+    """Single bot loop - only one instance"""
     try:
         with open("config.json", "r") as f:
             config = json.load(f)
         logger.info("✅ Config loaded")
 
         from bot.exchange_factory import build_exchange
-        exchange = build_exchange(config)
+        build_exchange(config)
         logger.info("✅ Exchange initialized")
 
+        # Single engine - new version only
         from bot.pair_engine import PairEngine
-        from bot.position_monitor import PositionMonitor
-
-        engine = PairEngine(config, exchange)
+        engine = PairEngine(config)
         logger.info("✅ PairEngine initialized")
 
-        # Start position monitor background thread
+        # Position monitor
+        from bot.position_monitor import PositionMonitor
         monitor = PositionMonitor(config)
         monitor.start()
         logger.info("✅ Position monitor started")
 
-        poll_seconds = int(config.get("BOT_POLL_SECONDS", 60))
-        logger.info(f"🚀 Bot running! Scanning every {poll_seconds}s")
+        poll = int(config.get("BOT_POLL_SECONDS", 60))
+        logger.info(f"🚀 Bot running - scanning every {poll}s")
 
         while True:
             try:
                 engine.scan_and_trade()
-                logger.info(f"⏳ Waiting {poll_seconds}s before next scan...")
-                time.sleep(poll_seconds)
+                logger.info(f"⏳ Waiting {poll}s before next scan...")
+                time.sleep(poll)
             except KeyboardInterrupt:
-                logger.info("🔴 Bot stopped by user")
                 break
             except Exception as e:
                 logger.error(f"❌ Loop error: {e}")
@@ -85,11 +102,8 @@ def run_bot():
 if __name__ == "__main__":
     logger.info("🚀 Starting NEXUS Trading Bot...")
 
-    ping_thread = threading.Thread(target=self_ping_loop, daemon=True)
-    ping_thread.start()
-
-    bot_thread = threading.Thread(target=run_bot, daemon=True)
-    bot_thread.start()
+    threading.Thread(target=self_ping_loop, daemon=True).start()
+    threading.Thread(target=run_bot, daemon=True).start()
 
     port = int(os.environ.get("PORT", 8000))
     logger.info(f"🌐 Web server on port {port}")
