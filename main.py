@@ -52,8 +52,15 @@ def run_bot():
         logger.info("✅ Exchange initialized")
 
         from bot.pair_engine import PairEngine
+        from bot.position_monitor import PositionMonitor
+
         engine = PairEngine(config, exchange)
         logger.info("✅ PairEngine initialized")
+
+        # Start position monitor background thread
+        monitor = PositionMonitor(config)
+        monitor.start()
+        logger.info("✅ Position monitor started")
 
         poll_seconds = int(config.get("BOT_POLL_SECONDS", 60))
         logger.info(f"🚀 Bot running! Scanning every {poll_seconds}s")
