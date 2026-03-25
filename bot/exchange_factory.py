@@ -167,7 +167,6 @@ def place_order_direct(cfg, symbol, side, size, order_type="market"):
             "marginCoin": "USDT",
             "size": str(size),
             "side": side.lower(),
-            "tradeSide": "open",
             "orderType": order_type,
         }
         body_str = json.dumps(body)
