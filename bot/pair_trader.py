@@ -149,6 +149,65 @@ class PairTrader:
             logger.error(traceback.format_exc())
             return False
 
+
+    def trade_with_score(self, scanner_score):
+        """Execute trade using pre-computed scanner score directly"""
+        try:
+            # Cooldown check
+            elapsed = time.time() - self.last_trade_time
+            if self.last_trade_time > 0 and elapsed < self.cooldown_seconds:
+                remaining = int((self.cooldown_seconds - elapsed) / 60)
+                logger.info(
+                    f"[PairTrader] {self.symbol} in cooldown "
+                    f"({remaining}m remaining)"
+                )
+                return False
+
+            # Use scanner score directly
+            score = scanner_score
+            logger.info(f"[PairTrader] {self.symbol} | Scanner Score: {score:.1f}")
+
+            if score < self.min_trade_score:
+                logger.info(
+                    f"[PairTrader] {self.symbol} score {score:.1f} "
+                    f"below threshold {self.min_trade_score}, skipping"
+                )
+                return False
+
+            # Validate price
+            current_price = self._get_price()
+            if not current_price:
+                return False
+
+            # Default to LONG for positive scores
+            direction = "buy"
+            logger.info(
+                f"[PairTrader] {self.symbol} --- LONG {score:.1f} @ {current_price}"
+            )
+
+            qty = self._calc_qty(current_price)
+            if not qty or qty <= 0:
+                return False
+
+            from bot.exchange_factory import place_order_direct
+            order = place_order_direct(self.config, self.symbol, direction, qty)
+
+            if order:
+                self.last_trade_time = time.time()
+                logger.info(
+                    f"[PairTrader] {self.symbol} ✅ ORDER SUCCESS | Score: {score:.1f}"
+                )
+                return True
+            else:
+                logger.error(f"[PairTrader] {self.symbol} ❌ ORDER FAILED")
+                return False
+
+        except Exception as e:
+            import traceback
+            logger.error(f"[PairTrader] {self.symbol} trade error: {e}")
+            logger.error(traceback.format_exc())
+            return False
+
     def _calc_qty(self, price):
         """Calculate position size based on balance and risk settings"""
         try:
