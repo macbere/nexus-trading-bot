@@ -259,3 +259,38 @@ def place_tpsl_direct(cfg, symbol, side, entry_price, tp_pct=0.025, sl_pct=0.015
         logger.error(f"[Exchange] TP/SL error: {e}")
         return False
 
+
+def close_position_direct(cfg, symbol, hold_side, size):
+    """
+    Close an open position by placing a reduce-only market order.
+    hold_side: long -> close with sell | short -> close with buy
+    """
+    try:
+        raw_symbol = symbol.replace("/USDT:USDT","USDT").replace("/","")
+        close_side = "sell" if hold_side == "long" else "buy"
+        body = {
+            "symbol":      raw_symbol,
+            "productType": "USDT-FUTURES",
+            "marginMode":  "crossed",
+            "marginCoin":  "USDT",
+            "size":        str(size),
+            "side":        close_side,
+            "tradeSide":   "close",
+            "orderType":   "market",
+        }
+        body_str = json.dumps(body)
+        path = "/api/v2/mix/order/place-order"
+        headers = _sign_request(cfg, "POST", path, body_str)
+        result = requests.post(
+            f"https://api.bitget.com{path}",
+            headers=headers, data=body_str, timeout=10
+        ).json()
+        if result.get("code") == "00000":
+            logger.info(f"[Exchange] ✅ Closed: {symbol} {hold_side} size:{size}")
+            return True
+        else:
+            logger.error(f"[Exchange] ❌ Close failed: {result.get('msg')}")
+            return False
+    except Exception as e:
+        logger.error(f"[Exchange] Close error: {e}")
+        return False
