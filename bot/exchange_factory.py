@@ -151,72 +151,117 @@ def fetch_ohlcv_direct(symbol, timeframe="1m", limit=100):
         return []
 
 
-def place_order_direct(cfg, symbol, side, size, order_type="market"):
+def place_order_direct(cfg, symbol, side, size, order_type="market", tp_pct=0.03, sl_pct=0.015):
+    """
+    Place futures order with preset TP/SL built into the order.
+    Uses presetStopSurplusPrice and presetStopLossPrice on place-order endpoint.
+    This avoids all separate TPSL API calls and holdSide issues entirely.
+    """
     try:
-        raw_symbol = symbol.replace("/USDT:USDT", "USDT").replace("/", "")
+        raw_symbol = symbol.replace("/USDT:USDT","USDT").replace("/","").upper()
+        decimals = _get_price_decimals(symbol)
+
+        # First get current price for TP/SL calculation
+        ticker_url = (
+            f"https://api.bitget.com/api/v2/mix/market/ticker"
+            f"?symbol={raw_symbol}&productType=USDT-FUTURES"
+        )
+        price_data = requests.get(ticker_url, timeout=10).json()
+        current_price = 0
+        if price_data.get("code") == "00000" and price_data.get("data"):
+            current_price = float(price_data["data"][0].get("lastPr", 0))
+
+        # Calculate preset TP/SL prices
+        preset_tp = ""
+        preset_sl = ""
+        if current_price > 0:
+            if side.lower() == "buy":
+                preset_tp = str(round(current_price * (1 + tp_pct), decimals))
+                preset_sl = str(round(current_price * (1 - sl_pct), decimals))
+            else:
+                preset_tp = str(round(current_price * (1 - tp_pct), decimals))
+                preset_sl = str(round(current_price * (1 + sl_pct), decimals))
+
         body = {
-            "symbol": raw_symbol,
-            "productType": "USDT-FUTURES",
-            "marginMode": "crossed",
-            "marginCoin": "USDT",
-            "size": str(size),
-            "side": side.lower(),
-            "orderType": order_type,
+            "symbol":                  raw_symbol,
+            "productType":             "USDT-FUTURES",
+            "marginMode":              "crossed",
+            "marginCoin":              "USDT",
+            "size":                    str(size),
+            "side":                    side.lower(),
+            "orderType":               order_type,
+            "presetStopSurplusPrice":  preset_tp,
+            "presetStopLossPrice":     preset_sl,
         }
         body_str = json.dumps(body)
         path = "/api/v2/mix/order/place-order"
         headers = _sign_request(cfg, "POST", path, body_str)
-        resp = requests.post(f"https://api.bitget.com{path}", headers=headers, data=body_str, timeout=10)
+        resp = requests.post(
+            f"https://api.bitget.com{path}",
+            headers=headers,
+            data=body_str,
+            timeout=10
+        )
         result = resp.json()
         if result.get("code") == "00000":
             order_id = result.get("data", {}).get("orderId", "unknown")
-            logger.info(f"[Exchange] ✅ Order placed: {side} {size} {symbol} | ID: {order_id}")
+            logger.info(
+                f"[Exchange] ✅ Order+TPSL placed: {side} {size} {symbol} "
+                f"| ID:{order_id} | TP:{preset_tp} SL:{preset_sl}"
+            )
             return result.get("data", {})
-        logger.error(f"[Exchange] ❌ Order failed: {result.get('msg')} | {result}")
-        return None
+        else:
+            logger.error(f"[Exchange] ❌ Order failed: {result.get('msg')} | {result}")
+            return None
     except Exception as e:
-        logger.error(f"[Exchange] Order placement exception: {e}")
+        logger.error(f"[Exchange] Order error: {e}")
         return None
 
 
 def place_tpsl_direct(cfg, symbol, side, entry_price, tp_pct=0.025, sl_pct=0.015, size=None):
+    """Disabled - TP/SL now set directly in place_order_direct via preset prices"""
+    logger.info(f"[Exchange] TP/SL preset in order - no separate call needed")
+    return True
+
+def place_tpsl_direct(cfg, symbol, side, entry_price, tp_pct=0.025, sl_pct=0.015, size=None):
     """
-    Official Bitget API v2 place-tpsl-order format.
-    CRITICAL: symbol must be LOWERCASE (e.g. bnbusdt not BNBUSDT)
-    productType: usdt-futures (lowercase)
+    Official Bitget place-tpsl-order - EXACT format from official API docs:
+    symbol: lowercase (ethusdt not ETHUSDT)
+    productType: usdt-futures
     planType: profit_plan | loss_plan
-    executePrice: 0 = market execution
-    rangeRate: empty string required
+    executePrice: "0" = market execution
+    holdSide: long | short
+    size: actual position size
+    rangeRate: "" (required empty string)
     """
     try:
-        raw_symbol = symbol.replace("/USDT:USDT", "USDT").replace("/", "").lower()
+        raw_symbol = symbol.replace("/USDT:USDT","USDT").replace("/","").lower()
         decimals = _get_price_decimals(symbol)
+        is_long = side.lower() == "buy"
+        hold_side = "long" if is_long else "short"
 
-        # Fetch actual position data
-        actual_hold_side = None
-        actual_size = None
+        # Get actual position size from open positions
+        pos_size = "1"
         try:
             positions = get_positions(cfg)
-            sym_upper = raw_symbol.upper()
             for p in positions:
-                if sym_upper in p.get("symbol", "").upper():
-                    actual_hold_side = p.get("holdSide", "").lower()
-                    actual_size = str(p.get("total", "1"))
+                if raw_symbol.upper() in p.get("symbol","").upper():
+                    pos_size = str(p.get("total","1"))
                     break
         except Exception:
             pass
 
-        hold_side = actual_hold_side if actual_hold_side else ("long" if side.lower() == "buy" else "short")
-        pos_size = actual_size if (actual_size and float(actual_size) > 0) else (str(size) if size else "1")
-
-        if hold_side == "long":
+        if is_long:
             tp_price = round(entry_price * (1 + tp_pct), decimals)
             sl_price = round(entry_price * (1 - sl_pct), decimals)
         else:
             tp_price = round(entry_price * (1 - tp_pct), decimals)
             sl_price = round(entry_price * (1 + sl_pct), decimals)
 
-        logger.info(f"[Exchange] TPSL: {raw_symbol} TP:{tp_price} SL:{sl_price} size:{pos_size} side:{hold_side}")
+        logger.info(
+            f"[Exchange] TPSL {raw_symbol} | {hold_side} | "
+            f"TP:{tp_price} SL:{sl_price} | size:{pos_size}"
+        )
 
         path = "/api/v2/mix/order/place-tpsl-order"
         results = []
@@ -226,9 +271,9 @@ def place_tpsl_direct(cfg, symbol, side, entry_price, tp_pct=0.025, sl_pct=0.015
             ("SL", sl_price, "loss_plan"),
         ]:
             body = {
-                "symbol":       raw_symbol,
-                "productType":  "usdt-futures",
                 "marginCoin":   "USDT",
+                "productType":  "usdt-futures",
+                "symbol":       raw_symbol,
                 "planType":     plan_type,
                 "triggerPrice": str(trigger_price),
                 "triggerType":  "mark_price",
@@ -250,7 +295,9 @@ def place_tpsl_direct(cfg, symbol, side, entry_price, tp_pct=0.025, sl_pct=0.015
                 logger.info(f"[Exchange] ✅ {label} set: {symbol} @ {trigger_price}")
                 results.append(True)
             else:
-                logger.error(f"[Exchange] ❌ {label} failed: {result.get('msg')} | {result}")
+                logger.error(
+                    f"[Exchange] ❌ {label} failed: {result.get('msg')} | {result}"
+                )
                 results.append(False)
 
         return all(results)
@@ -258,7 +305,6 @@ def place_tpsl_direct(cfg, symbol, side, entry_price, tp_pct=0.025, sl_pct=0.015
     except Exception as e:
         logger.error(f"[Exchange] TP/SL error: {e}")
         return False
-
 
 def close_position_direct(cfg, symbol, hold_side, size):
     """
