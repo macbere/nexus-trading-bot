@@ -345,3 +345,24 @@ def close_position_direct(cfg, symbol, hold_side, size):
         logger.error(f"[Exchange] Close error: {e}")
         return False
 
+
+def _get_min_qty(symbol):
+    """Minimum order quantity per symbol - from Bitget contract specs"""
+    KNOWN_MIN_QTY = {
+        "BTCUSDT":  0.001,  "ETHUSDT":  0.01,   "SOLUSDT":  0.1,
+        "BNBUSDT":  0.01,   "XRPUSDT":  1.0,    "ADAUSDT":  1.0,
+        "DOGEUSDT": 1.0,    "LTCUSDT":  0.01,   "DOTUSDT":  0.1,
+        "LINKUSDT": 0.1,    "UNIUSDT":  0.1,    "AVAXUSDT": 0.1,
+        "ATOMUSDT": 0.1,    "FILUSDT":  0.1,    "AAVEUSDT": 0.01,
+        "ICPUSDT":  0.1,    "ETCUSDT":  0.1,    "TRXUSDT":  1.0,
+        "XLMUSDT":  1.0,    "BCHUSDT":  0.001,  "NEARUSDT": 0.1,
+        "ALGOUSDT": 1.0,    "MATICUSDT":1.0,    "INJUSDT":  0.01,
+        "OPUSDT":   0.1,    "ARBUSDT":  0.1,    "SUSHIUSDT":0.1,
+        "GMTUSDT":  1.0,    "APTUSDT":  0.1,    "DYDXUSDT": 0.1,
+        "CRVUSDT":  1.0,    "SANDUSDT": 1.0,    "MANAUSDT": 1.0,
+        "GALAUSDT":10.0,    "BNBUSDT":  0.01,   "RUNEUSDT": 0.1,
+        "FTMUSDT":  1.0,    "LDOUSDT":  0.1,    "STXUSDT":  0.1,
+        "KNCUSDT":  0.1,    "AAVEUSDT": 0.01,
+    }
+    raw = symbol.replace("/USDT:USDT","USDT").replace("/","").upper()
+    return KNOWN_MIN_QTY.get(raw, 1.0)

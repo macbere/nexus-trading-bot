@@ -49,7 +49,7 @@ class PairTrader:
 
     def _calc_qty(self, price):
         try:
-            from bot.exchange_factory import get_balance
+            from bot.exchange_factory import get_balance, _get_min_qty
             bal = get_balance(self.config)
             free = float(bal.get("free", 0))
             risk_pct = float(self.config.get("BOT_RISK_PCT", "15.0"))
@@ -57,8 +57,29 @@ class PairTrader:
             risk_usd = min(free * risk_pct / 100, max_usd)
             if risk_usd < 6.0:
                 risk_usd = 6.0
-            qty = math.ceil((risk_usd / price) * 1000) / 1000
-            logger.info(f"[Trader] {self.symbol} | Free:{free:.2f} Risk:${risk_usd:.2f} Qty:{qty}")
+
+            # Get minimum lot size for this symbol
+            min_qty = _get_min_qty(self.symbol)
+            min_notional = min_qty * price
+
+            # If minimum order costs more than our risk budget, skip
+            if min_notional > free * 0.8:
+                logger.warning(
+                    f"[Trader] {self.symbol} min order ${min_notional:.2f} "
+                    f"exceeds balance ${free:.2f} - skipping"
+                )
+                return 0
+
+            # Calculate qty and ensure it meets minimum
+            raw_qty = risk_usd / price
+            qty = max(raw_qty, min_qty)
+            qty = math.ceil(qty / min_qty) * min_qty
+            qty = round(qty, 6)
+
+            logger.info(
+                f"[Trader] {self.symbol} | Free:{free:.2f} "
+                f"Risk:${risk_usd:.2f} MinQty:{min_qty} Qty:{qty}"
+            )
             return qty
         except Exception as e:
             logger.error(f"[Trader] Qty error: {e}")
