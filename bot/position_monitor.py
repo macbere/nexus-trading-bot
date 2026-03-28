@@ -100,8 +100,19 @@ class PositionMonitor:
                         del self.position_open_times[symbol]
                     continue
 
-                # RULE 2: Cut loss if open > 3 hours AND ROE < -3% AND signal reversed
-                if hours_open >= 3.0 and roe <= -3.0:
+                # RULE 2: Close stuck positions after 2h if barely moving
+                if hours_open >= 2.0 and -0.5 <= roe <= 0.5:
+                    logger.info(
+                        f"[Monitor] 🔄 {symbol} stuck 2h ROE:{roe:.2f}% - "
+                        f"closing to free slot"
+                    )
+                    if close_position_direct(self.config, sym_ccxt, hold, size):
+                        if symbol in self.position_open_times:
+                            del self.position_open_times[symbol]
+                    continue
+
+                # RULE 3: Cut loss if open > 3 hours AND ROE < -2% AND signal reversed
+                if hours_open >= 3.0 and roe <= -2.0:
                     rsi = self._get_rsi(sym_ccxt)
                     signal_reversed = (
                         (hold == "long"  and rsi > 60) or
@@ -113,10 +124,11 @@ class PositionMonitor:
                             f"ROE:{roe:.2f}% open:{hours_open:.1f}h RSI:{rsi:.1f}"
                         )
                         if close_position_direct(self.config, sym_ccxt, hold, size):
-                            del self.position_open_times[symbol]
+                            if symbol in self.position_open_times:
+                                del self.position_open_times[symbol]
                     else:
                         logger.info(
-                            f"[Monitor] ⏳ {symbol} holding: signal not reversed RSI:{rsi:.1f}"
+                            f"[Monitor] ⏳ {symbol} loss but signal ok RSI:{rsi:.1f}"
                         )
                     continue
 

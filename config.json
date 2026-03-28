@@ -17,8 +17,8 @@
     "BOT_RSI_OB": "60",
     "BOT_RSI_OS": "40",
     "BOT_RISK_PCT": "15.0",
-    "BOT_SL_PCT": "1.5",
-    "BOT_TP_PCT": "3.0",
+    "BOT_SL_PCT": "1.0",
+    "BOT_TP_PCT": "2.0",
     "BOT_MAX_POS_USD": "4.0",
     "BOT_MAX_DAILY_LOSS_USD": "2.0",
     "BOT_MAX_ERRORS": "50",
@@ -29,14 +29,14 @@
     "BOT_SCAN_INTERVAL": 21600,
     "BOT_MAX_SCAN_PAIRS": "10",
     "BOT_DEMO_MODE": "false",
-    "BOT_TRADE_COOLDOWN_MIN": "10",
+    "BOT_TRADE_COOLDOWN_MIN": "5",
     "BOT_TRADE_COOLDOWN_MAX": "60",
     "BOT_MIN_ADX_FOR_TREND": "25",
     "BOT_RSI_OVERSOLD": "30",
     "BOT_RSI_OVERBOUGHT": "70",
     "BOT_TAKE_PROFIT_PCT": "2.5",
     "BOT_STOP_LOSS_PCT": "1.5",
-    "BOT_MAX_OPEN_POSITIONS": 3,
+    "BOT_MAX_OPEN_POSITIONS": 2,
     "MARKET_SCANNER_TOP_PAIRS_LIMIT": 50,
-    "MIN_TRADE_SCORE": 18
+    "MIN_TRADE_SCORE": 25
 }
