@@ -112,6 +112,46 @@ class PairTrader:
             direction = "sell" if rsi >= 65 else "buy"
             dir_label = "SHORT" if direction == "sell" else "LONG"
 
+            # RSI confirmation: check if RSI is turning (not still running strongly)
+            # Get 2 candles back to confirm RSI momentum is shifting
+            try:
+                from bot.exchange_factory import fetch_ohlcv_direct
+                import pandas as pd
+                ohlcv = fetch_ohlcv_direct(self.symbol, "1m", limit=20)
+                if ohlcv and len(ohlcv) >= 5:
+                    df = pd.DataFrame(ohlcv, columns=["ts","o","h","l","c","v"])
+                    close = df["c"].astype(float)
+                    delta = close.diff()
+                    gain = delta.where(delta > 0, 0).rolling(14).mean()
+                    loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
+                    rs = gain / loss
+                    rsi_series = 100 - (100 / (1 + rs))
+                    rsi_now = float(rsi_series.iloc[-1])
+                    rsi_prev = float(rsi_series.iloc[-3])
+
+                    # For SHORT: RSI must be falling from peak (not still rising)
+                    if direction == "sell" and rsi_now > rsi_prev:
+                        logger.info(
+                            f"[Trader] {self.symbol} SHORT skipped: "
+                            f"RSI still rising {rsi_prev:.1f} -> {rsi_now:.1f}"
+                        )
+                        return False
+
+                    # For LONG: RSI must be rising from bottom (not still falling)
+                    if direction == "buy" and rsi_now < rsi_prev:
+                        logger.info(
+                            f"[Trader] {self.symbol} LONG skipped: "
+                            f"RSI still falling {rsi_prev:.1f} -> {rsi_now:.1f}"
+                        )
+                        return False
+
+                    logger.info(
+                        f"[Trader] {self.symbol} RSI confirmed turning: "
+                        f"{rsi_prev:.1f} -> {rsi_now:.1f} | {dir_label}"
+                    )
+            except Exception as rsi_err:
+                logger.warning(f"[Trader] RSI confirmation error: {rsi_err}")
+
             logger.info(f"[Trader] {self.symbol} | RSI:{rsi:.1f} | {dir_label} @ {price} | Score:{score:.1f}")
 
             qty = self._calc_qty(price)
