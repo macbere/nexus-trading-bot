@@ -308,14 +308,17 @@ def place_tpsl_direct(cfg, symbol, side, entry_price, tp_pct=0.025, sl_pct=0.015
 
 def close_position_direct(cfg, symbol, hold_side, size):
     """
-    Close position in one-way mode.
-    One-way mode: side=sell to close long, side=buy to close short.
-    reduceOnly=true ensures it closes not opens.
+    Close open position in one-way mode using flash close approach.
+    One-way mode close = opposite side market order without tradeSide.
+    long position -> sell order
+    short position -> buy order
     """
     try:
         raw_symbol = symbol.replace("/USDT:USDT","USDT").replace("/","").upper()
-        # In one-way mode: close long = sell, close short = buy
+
+        # In one-way mode: sell to close long, buy to close short
         close_side = "sell" if hold_side.lower() == "long" else "buy"
+
         body = {
             "symbol":      raw_symbol,
             "productType": "USDT-FUTURES",
@@ -323,8 +326,8 @@ def close_position_direct(cfg, symbol, hold_side, size):
             "marginCoin":  "USDT",
             "size":        str(size),
             "side":        close_side,
+            "tradeSide":   "close",
             "orderType":   "market",
-            "reduceOnly":  "YES",
         }
         body_str = json.dumps(body)
         path = "/api/v2/mix/order/place-order"
@@ -335,16 +338,38 @@ def close_position_direct(cfg, symbol, hold_side, size):
             data=body_str,
             timeout=10
         ).json()
+
         if result.get("code") == "00000":
             logger.info(f"[Exchange] ✅ Closed: {symbol} {hold_side} size:{size}")
             return True
+
+        # If tradeSide close fails, try flash close endpoint
+        logger.warning(f"[Exchange] tradeSide close failed: {result.get('msg')} - trying flash close")
+
+        flash_path = "/api/v2/mix/order/close-positions"
+        flash_body = {
+            "symbol":      raw_symbol,
+            "productType": "USDT-FUTURES",
+        }
+        flash_str = json.dumps(flash_body)
+        flash_headers = _sign_request(cfg, "POST", flash_path, flash_str)
+        flash_result = requests.post(
+            f"https://api.bitget.com{flash_path}",
+            headers=flash_headers,
+            data=flash_str,
+            timeout=10
+        ).json()
+
+        if flash_result.get("code") == "00000":
+            logger.info(f"[Exchange] ✅ Flash closed all: {symbol}")
+            return True
         else:
-            logger.error(f"[Exchange] ❌ Close failed: {result.get('msg')}")
+            logger.error(f"[Exchange] ❌ All close methods failed: {flash_result.get('msg')}")
             return False
+
     except Exception as e:
         logger.error(f"[Exchange] Close error: {e}")
         return False
-
 
 def _get_min_qty(symbol):
     """Minimum order quantity per symbol - from Bitget contract specs"""
