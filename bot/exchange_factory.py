@@ -9,6 +9,7 @@ import time
 import json
 import requests
 import logging
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -16,14 +17,70 @@ _cfg_cache = None
 _precision_cache = {}
 
 
+def _as_bool(value, default=False):
+    if value is None:
+        return default
+    return str(value).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def is_demo_mode(cfg):
+    """Return whether authenticated Bitget requests must use demo trading."""
+    return _as_bool(cfg.get("BITGET_DEMO", cfg.get("BOT_SANDBOX", True)), True)
+
+
+def _require_trading_mode(cfg):
+    """Refuse live orders unless the operator explicitly opts in."""
+    if is_demo_mode(cfg):
+        return
+    if not _as_bool(cfg.get("BOT_ALLOW_LIVE_TRADING"), False):
+        raise RuntimeError(
+            "Live trading is disabled. Set BITGET_DEMO=true for demo mode, "
+            "or explicitly set BOT_ALLOW_LIVE_TRADING=true to enable live orders."
+        )
+
+
+class BitgetExchangeClient:
+    """Small compatibility wrapper around the direct REST helpers."""
+
+    def __init__(self, config):
+        self.config = config
+
+    def create_order(self, symbol, order_type, side, amount, price=None, params=None):
+        params = params or {}
+        _require_trading_mode(self.config)
+        if params.get("reduceOnly"):
+            hold_side = "long" if side.lower() == "sell" else "short"
+            ok = close_position_direct(self.config, symbol, hold_side, amount)
+            if ok:
+                return {
+                    "id": f"close-{int(time.time() * 1000)}",
+                    "status": "closed",
+                    "symbol": symbol,
+                    "amount": amount,
+                }
+            return None
+
+        return place_order_direct(
+            self.config,
+            symbol,
+            side,
+            amount,
+            order_type=order_type,
+            price=price,
+            tp_pct=float(self.config.get("BOT_TP_PCT", 3.0)) / 100,
+            sl_pct=float(self.config.get("BOT_SL_PCT", 1.5)) / 100,
+        )
+
+
 def build_exchange(config=None):
     global _cfg_cache
     if config is None:
-        with open("config.json", "r") as f:
+        config_path = Path(__file__).resolve().parent.parent / "config.json"
+        with open(config_path, "r", encoding="utf-8") as f:
             config = json.load(f)
     _cfg_cache = config
     logger.info("✅ Bitget direct REST API initialized")
-    return config
+    return BitgetExchangeClient(config)
 
 
 def _sign_request(cfg, method, path, body_str=""):
@@ -33,7 +90,7 @@ def _sign_request(cfg, method, path, body_str=""):
     sign = base64.b64encode(
         hmac.new(secret.encode(), msg.encode(), hashlib.sha256).digest()
     ).decode()
-    return {
+    headers = {
         "ACCESS-KEY": cfg.get("BITGET_API_KEY", ""),
         "ACCESS-SIGN": sign,
         "ACCESS-TIMESTAMP": timestamp,
@@ -41,6 +98,9 @@ def _sign_request(cfg, method, path, body_str=""):
         "Content-Type": "application/json",
         "locale": "en-US",
     }
+    if is_demo_mode(cfg):
+        headers["paptrading"] = "1"
+    return headers
 
 
 def _get_price_decimals(symbol):
@@ -96,7 +156,9 @@ def _get_price_decimals(symbol):
 def get_balance(cfg):
     try:
         path = "/api/v2/mix/account/account"
-        params = "?symbol=BTCUSDT&productType=USDT-FUTURES&marginCoin=USDT"
+        symbol = cfg.get("BOT_SYMBOL", "BTC/USDT:USDT")
+        raw_symbol = symbol.replace("/USDT:USDT", "USDT").replace("/", "").upper()
+        params = f"?symbol={raw_symbol}&productType=USDT-FUTURES&marginCoin=USDT"
         headers = _sign_request(cfg, "GET", path + params)
         resp = requests.get(f"https://api.bitget.com{path}{params}", headers=headers, timeout=10)
         data = resp.json()
@@ -128,6 +190,25 @@ def get_positions(cfg):
         return []
 
 
+def get_open_orders(cfg, fail_closed=False):
+    """Return currently pending USDT futures orders without modifying them."""
+    try:
+        path = "/api/v2/mix/order/orders-pending"
+        params = "?productType=USDT-FUTURES&limit=100"
+        headers = _sign_request(cfg, "GET", path + params)
+        resp = requests.get(f"https://api.bitget.com{path}{params}", headers=headers, timeout=10)
+        data = resp.json()
+        if data.get("code") == "00000":
+            payload = data.get("data") or {}
+            orders = payload.get("entrustedList") or []
+            return orders if isinstance(orders, list) else []
+        logger.error(f"[Exchange] Open orders error: {data.get('msg')}")
+        return None if fail_closed else []
+    except Exception as e:
+        logger.error(f"[Exchange] Open orders fetch failed: {e}")
+        return None if fail_closed else []
+
+
 def fetch_ohlcv_direct(symbol, timeframe="1m", limit=100):
     try:
         raw = symbol.replace("/USDT:USDT", "USDT").replace("/", "")
@@ -151,15 +232,56 @@ def fetch_ohlcv_direct(symbol, timeframe="1m", limit=100):
         return []
 
 
-def place_order_direct(cfg, symbol, side, size, order_type="market", tp_pct=0.03, sl_pct=0.015):
+def place_order_direct(
+    cfg,
+    symbol,
+    side,
+    size,
+    order_type="market",
+    price=None,
+    tp_pct=None,
+    sl_pct=None,
+):
     """
     Place futures order with preset TP/SL built into the order.
     Uses presetStopSurplusPrice and presetStopLossPrice on place-order endpoint.
     This avoids all separate TPSL API calls and holdSide issues entirely.
     """
+    _require_trading_mode(cfg)
+    if tp_pct is None:
+        tp_pct = float(cfg.get("BOT_TP_PCT", 3.0)) / 100
+    if sl_pct is None:
+        sl_pct = float(cfg.get("BOT_SL_PCT", 1.5)) / 100
+    if _as_bool(cfg.get("BOT_PAPER_TRADING", False)):
+        logger.warning(
+            f"[Exchange] PAPER TRADE only: {side.lower()} {size} {symbol}; "
+            "no order sent to Bitget"
+        )
+        return {
+            "id": f"paper-{int(time.time() * 1000)}",
+            "orderId": "paper",
+            "paper": True,
+            "side": side.lower(),
+            "size": str(size),
+        }
     try:
         raw_symbol = symbol.replace("/USDT:USDT","USDT").replace("/","").upper()
         decimals = _get_price_decimals(symbol)
+
+        # The public ticker list can include instruments unavailable to the
+        # Demo account. Check the futures contract list before sizing/order.
+        contracts_url = (
+            "https://api.bitget.com/api/v2/mix/market/contracts"
+            "?productType=USDT-FUTURES"
+        )
+        contracts = requests.get(contracts_url, timeout=10).json()
+        available = {str(item.get("symbol", "")).upper()
+                     for item in contracts.get("data", [])}
+        if raw_symbol not in available:
+            logger.warning(
+                f"[Exchange] {symbol} is not available in USDT-FUTURES; skipping"
+            )
+            return None
 
         # First get current price for TP/SL calculation
         ticker_url = (
@@ -169,7 +291,10 @@ def place_order_direct(cfg, symbol, side, size, order_type="market", tp_pct=0.03
         price_data = requests.get(ticker_url, timeout=10).json()
         current_price = 0
         if price_data.get("code") == "00000" and price_data.get("data"):
-            current_price = float(price_data["data"][0].get("lastPr", 0))
+            ticker = price_data["data"][0]
+            current_price = float(
+                ticker.get("markPrice") or ticker.get("lastPr", 0)
+            )
 
         # Calculate preset TP/SL prices
         preset_tp = ""
@@ -188,11 +313,15 @@ def place_order_direct(cfg, symbol, side, size, order_type="market", tp_pct=0.03
             "marginMode":              "crossed",
             "marginCoin":              "USDT",
             "size":                    str(size),
-            "side":                    side.lower(),
-            "orderType":               order_type,
+        "side":                    side.lower(),
+        # Required for hedge-mode openings and ignored in one-way mode.
+        "tradeSide":               "open",
+        "orderType":               order_type,
             "presetStopSurplusPrice":  preset_tp,
             "presetStopLossPrice":     preset_sl,
         }
+        if price is not None and order_type.lower() != "market":
+            body["price"] = str(price)
         body_str = json.dumps(body)
         path = "/api/v2/mix/order/place-order"
         headers = _sign_request(cfg, "POST", path, body_str)
@@ -209,7 +338,10 @@ def place_order_direct(cfg, symbol, side, size, order_type="market", tp_pct=0.03
                 f"[Exchange] ✅ Order+TPSL placed: {side} {size} {symbol} "
                 f"| ID:{order_id} | TP:{preset_tp} SL:{preset_sl}"
             )
-            return result.get("data", {})
+            payload = dict(result.get("data", {}) or {})
+            payload.setdefault("id", order_id)
+            payload.setdefault("orderId", order_id)
+            return payload
         else:
             logger.error(f"[Exchange] ❌ Order failed: {result.get('msg')} | {result}")
             return None
@@ -217,11 +349,6 @@ def place_order_direct(cfg, symbol, side, size, order_type="market", tp_pct=0.03
         logger.error(f"[Exchange] Order error: {e}")
         return None
 
-
-def place_tpsl_direct(cfg, symbol, side, entry_price, tp_pct=0.025, sl_pct=0.015, size=None):
-    """Disabled - TP/SL now set directly in place_order_direct via preset prices"""
-    logger.info(f"[Exchange] TP/SL preset in order - no separate call needed")
-    return True
 
 def place_tpsl_direct(cfg, symbol, side, entry_price, tp_pct=0.025, sl_pct=0.015, size=None):
     """
@@ -313,6 +440,7 @@ def close_position_direct(cfg, symbol, hold_side, size):
     long position -> sell order
     short position -> buy order
     """
+    _require_trading_mode(cfg)
     try:
         raw_symbol = symbol.replace("/USDT:USDT","USDT").replace("/","").upper()
 

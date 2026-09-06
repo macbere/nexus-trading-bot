@@ -1,19 +1,24 @@
 import json
 import logging
-import os
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-JOURNAL = "/home/macbere/trading_bot/logs/trade_journal.json"
-CONFIG  = "/home/macbere/trading_bot/config.json"
+BASE_DIR = Path(__file__).resolve().parent.parent
+JOURNAL = BASE_DIR / "logs" / "trade_journal.json"
+CONFIG = BASE_DIR / "config.json"
 
 def analyze_and_adapt():
     """Read trade journal and auto-tune RSI/TP/SL settings."""
-    if not os.path.exists(JOURNAL):
+    if not JOURNAL.exists():
         return
 
-    with open(JOURNAL, "r") as f:
-        trades = json.load(f)
+    try:
+        with JOURNAL.open("r", encoding="utf-8") as f:
+            trades = json.load(f)
+    except (OSError, json.JSONDecodeError) as exc:
+        logger.warning("[Adapt] Could not read trade journal: %s", exc)
+        return
 
     if len(trades) < 10:
         logger.info("[Adapt] Need at least 10 trades to adapt — currently have %d", len(trades))
@@ -29,8 +34,12 @@ def analyze_and_adapt():
 
     logger.info(f"[Adapt] Win rate: {win_rate:.1f}% | Avg win: ${avg_win:.4f} | Avg loss: ${avg_loss:.4f}")
 
-    with open(CONFIG, "r") as f:
-        cfg = json.load(f)
+    try:
+        with CONFIG.open("r", encoding="utf-8") as f:
+            cfg = json.load(f)
+    except (OSError, json.JSONDecodeError) as exc:
+        logger.warning("[Adapt] Could not read config: %s", exc)
+        return
 
     changed = False
 
@@ -60,7 +69,7 @@ def analyze_and_adapt():
         changed = True
 
     if changed:
-        with open(CONFIG, "w") as f:
+        with CONFIG.open("w", encoding="utf-8") as f:
             json.dump(cfg, f, indent=2)
         logger.info("[Adapt] Config updated with new parameters")
 

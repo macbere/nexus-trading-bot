@@ -28,6 +28,7 @@ import logging
 import os
 from functools import wraps
 from typing import List
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Security, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -46,6 +47,7 @@ except Exception:
     _cfg      = {}
 
 logger = logging.getLogger(__name__)
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ── FastAPI app ───────────────────────────────────────────
 app = FastAPI(
@@ -123,22 +125,21 @@ async def get_trades(limit: int = 20):
     if bot_state is None:
         raise HTTPException(status_code=503, detail="Bot engine not initialised.")
 
-    from bot.bot_engine import BotEngine   # lazy import
-    # Access risk manager via engine if available
     try:
-        logs = _get_engine().risk.trade_log[-limit:]
+        engine = _get_engine()
+        logs = getattr(getattr(engine, "risk", None), "trade_log", [])[-limit:]
         return [
             {
-                "symbol":      t.symbol,
-                "direction":   t.direction,
-                "entry_price": t.entry_price,
-                "qty":         t.qty,
-                "sl_price":    t.sl_price,
-                "tp_price":    t.tp_price,
-                "order_id":    t.order_id,
-                "status":      t.status,
-                "pnl":         t.pnl,
-                "timestamp":   t.timestamp,
+                "symbol":      getattr(t, "symbol", None),
+                "direction":   getattr(t, "direction", None),
+                "entry_price": getattr(t, "entry_price", None),
+                "qty":         getattr(t, "qty", None),
+                "sl_price":    getattr(t, "sl_price", None),
+                "tp_price":    getattr(t, "tp_price", None),
+                "order_id":    getattr(t, "order_id", None),
+                "status":      getattr(t, "status", None),
+                "pnl":         getattr(t, "pnl", None),
+                "timestamp":   getattr(t, "timestamp", None),
             }
             for t in logs
         ]
@@ -151,8 +152,8 @@ async def emergency_stop():
     """Trigger an immediate trading halt."""
     try:
         engine = _get_engine()
-        engine.risk._halted = True
-        engine._stop        = True
+        engine._stop = True
+        bot_state.running = False
         logger.warning("[API] Emergency stop triggered via API.")
         return {"status": "halted", "message": "Bot has been instructed to stop."}
     except Exception as exc:
@@ -167,9 +168,8 @@ async def resume_bot():
     """
     try:
         engine = _get_engine()
-        engine.risk._halted      = False
-        engine.risk._error_count = 0
-        engine._stop             = False
+        engine._stop = False
+        bot_state.running = True
         logger.info("[API] Bot resumed via API.")
         return {"status": "resumed"}
     except Exception as exc:
@@ -201,7 +201,7 @@ async def trigger_backtest(symbols:str="BTC/USDT:USDT,ETH/USDT:USDT,SOL/USDT:USD
     limit=min(max(limit,50),500)
     def _run():
         try:
-            import os;os.chdir("/home/macbere/trading_bot")
+            os.chdir(BASE_DIR)
             run_full_backtest(_cfg,symbols=sym_list,timeframe=timeframe,limit=limit)
         except Exception as e:logger.error(f"[API] Backtest error: {e}")
     threading.Thread(target=_run,daemon=True).start()
@@ -213,7 +213,7 @@ async def serve_dashboard():
     from fastapi.responses import HTMLResponse, FileResponse
     import os
     
-    dashboard_path = '/home/macbere/trading_bot/dashboard.html'
+    dashboard_path = BASE_DIR / "dashboard.html"
     
     # Try to serve dashboard.html
     if os.path.exists(dashboard_path):

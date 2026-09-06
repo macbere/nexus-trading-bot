@@ -1,107 +1,261 @@
 {
-  "timestamp": 1773545898.036093,
-  "timeframe": "15m",
-  "candles_used": 500,
+  "timestamp": 1788469657.6395278,
+  "timeframe": "1h",
+  "candles_used": 1000,
   "results": {
     "BTC/USDT:USDT": {
       "EMA": {
         "symbol": "BTC/USDT:USDT",
         "strategy": "EMA",
-        "candles_used": 500,
-        "total_trades": 3,
-        "win_rate_pct": 33.3,
-        "total_pnl_pct": 0.81,
+        "candles_used": 1000,
+        "round_trip_cost_pct": 0.3,
+        "total_trades": 14,
+        "win_rate_pct": 21.4,
+        "total_pnl_pct": -21.16,
         "best_trade": {
-          "pnl_pct": 3.1704,
+          "pnl_pct": 2.4508,
           "direction": "LONG",
           "reason": "TP"
         },
         "worst_trade": {
-          "pnl_pct": -1.5108,
-          "direction": "LONG",
+          "pnl_pct": -4.1523,
+          "direction": "SHORT",
           "reason": "SL"
         },
         "equity_curve": [
           1.0,
-          1.0317,
-          1.0161,
-          1.0075
+          0.9763,
+          0.9536,
+          0.9304,
+          0.9062,
+          0.8849,
+          0.8641,
+          0.8441,
+          0.8635,
+          0.8846,
+          0.9055,
+          0.8842,
+          0.8603,
+          0.8404,
+          0.8055
         ],
         "trades": [
           {
-            "direction": "LONG",
-            "entry": 69684.5,
-            "exit": 71893.8,
-            "pnl_pct": 3.1704,
-            "reason": "TP"
+            "direction": "SHORT",
+            "entry": 64050.0,
+            "exit": 65378.4,
+            "pnl_pct": -2.374,
+            "reason": "SL"
           },
           {
             "direction": "LONG",
-            "entry": 71725.9,
-            "exit": 70642.3,
-            "pnl_pct": -1.5108,
+            "entry": 65073.9,
+            "exit": 63760.4,
+            "pnl_pct": -2.3185,
             "reason": "SL"
           },
           {
             "direction": "SHORT",
-            "entry": 70789.2,
-            "exit": 71388.4,
-            "pnl_pct": -0.8465,
-            "reason": "OPEN"
+            "entry": 63522.4,
+            "exit": 64875.8,
+            "pnl_pct": -2.4306,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 64745.8,
+            "exit": 63252.9,
+            "pnl_pct": -2.6058,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 62977.1,
+            "exit": 64268.9,
+            "pnl_pct": -2.3512,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 63964.2,
+            "exit": 62655.9,
+            "pnl_pct": -2.3454,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 63109.6,
+            "exit": 64384.1,
+            "pnl_pct": -2.3195,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 64189.7,
+            "exit": 65855.1,
+            "pnl_pct": 2.2945,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 76993.3,
+            "exit": 79111.2,
+            "pnl_pct": 2.4508,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 78542.0,
+            "exit": 80627.6,
+            "pnl_pct": 2.3554,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 79157.2,
+            "exit": 77540.0,
+            "pnl_pct": -2.343,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 77436.6,
+            "exit": 79300.7,
+            "pnl_pct": -2.7073,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 78563.1,
+            "exit": 76984.4,
+            "pnl_pct": -2.3095,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 77527.7,
+            "exit": 80514.3,
+            "pnl_pct": -4.1523,
+            "reason": "SL"
           }
         ]
       },
       "BB": {
         "symbol": "BTC/USDT:USDT",
         "strategy": "BB",
-        "candles_used": 500,
-        "total_trades": 4,
-        "win_rate_pct": 50.0,
-        "total_pnl_pct": 0.81,
+        "candles_used": 1000,
+        "round_trip_cost_pct": 0.3,
+        "total_trades": 12,
+        "win_rate_pct": 41.7,
+        "total_pnl_pct": -11.13,
         "best_trade": {
-          "pnl_pct": 3.1213,
-          "direction": "SHORT",
+          "pnl_pct": 2.972,
+          "direction": "LONG",
           "reason": "TP"
         },
         "worst_trade": {
-          "pnl_pct": -1.5792,
+          "pnl_pct": -5.9842,
           "direction": "SHORT",
           "reason": "SL"
         },
         "equity_curve": [
           1.0,
-          0.9842,
-          0.969,
-          0.9993,
-          1.0073
+          0.9768,
+          0.9987,
+          1.0208,
+          1.0455,
+          0.983,
+          0.9601,
+          0.9317,
+          0.877,
+          0.903,
+          0.9239,
+          0.8911,
+          0.8886
         ],
         "trades": [
           {
-            "direction": "SHORT",
-            "entry": 70850.8,
-            "exit": 71969.7,
-            "pnl_pct": -1.5792,
+            "direction": "LONG",
+            "entry": 63847.6,
+            "exit": 62555.7,
+            "pnl_pct": -2.3234,
             "reason": "SL"
           },
           {
-            "direction": "SHORT",
-            "entry": 72219.9,
-            "exit": 73335.1,
-            "pnl_pct": -1.5442,
-            "reason": "SL"
+            "direction": "LONG",
+            "entry": 62502.0,
+            "exit": 64093.3,
+            "pnl_pct": 2.246,
+            "reason": "TP"
           },
           {
             "direction": "SHORT",
-            "entry": 73460.0,
-            "exit": 71167.1,
-            "pnl_pct": 3.1213,
+            "entry": 64268.9,
+            "exit": 62655.9,
+            "pnl_pct": 2.2098,
             "reason": "TP"
           },
           {
             "direction": "LONG",
-            "entry": 70815.3,
-            "exit": 71388.4,
-            "pnl_pct": 0.8093,
+            "entry": 62962.1,
+            "exit": 64677.8,
+            "pnl_pct": 2.425,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 64818.6,
+            "exit": 68503.0,
+            "pnl_pct": -5.9842,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 68429.2,
+            "exit": 69817.3,
+            "pnl_pct": -2.3285,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 71766.9,
+            "exit": 73674.7,
+            "pnl_pct": -2.9583,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 75099.0,
+            "exit": 79281.9,
+            "pnl_pct": -5.8698,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 76604.7,
+            "exit": 79111.2,
+            "pnl_pct": 2.972,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 79463.4,
+            "exit": 77390.9,
+            "pnl_pct": 2.3081,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 77978.1,
+            "exit": 80514.3,
+            "pnl_pct": -3.5525,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 81317.8,
+            "exit": 81300.0,
+            "pnl_pct": -0.2781,
             "reason": "OPEN"
           }
         ]
@@ -109,38 +263,55 @@
       "MULTI": {
         "symbol": "BTC/USDT:USDT",
         "strategy": "MULTI",
-        "candles_used": 500,
-        "total_trades": 2,
-        "win_rate_pct": 0.0,
-        "total_pnl_pct": -4.05,
+        "candles_used": 1000,
+        "round_trip_cost_pct": 0.3,
+        "total_trades": 4,
+        "win_rate_pct": 25.0,
+        "total_pnl_pct": -6.07,
         "best_trade": {
-          "pnl_pct": -1.9971,
+          "pnl_pct": 2.3675,
           "direction": "SHORT",
-          "reason": "SL"
+          "reason": "TP"
         },
         "worst_trade": {
-          "pnl_pct": -2.0541,
+          "pnl_pct": -3.5525,
           "direction": "SHORT",
           "reason": "SL"
         },
         "equity_curve": [
           1.0,
-          0.98,
-          0.9599
+          1.0237,
+          0.9996,
+          0.9742,
+          0.9396
         ],
         "trades": [
           {
             "direction": "SHORT",
-            "entry": 69815.2,
-            "exit": 71209.5,
-            "pnl_pct": -1.9971,
+            "entry": 64392.7,
+            "exit": 62675.0,
+            "pnl_pct": 2.3675,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 63420.0,
+            "exit": 64722.8,
+            "pnl_pct": -2.3542,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 64393.5,
+            "exit": 62954.2,
+            "pnl_pct": -2.5352,
             "reason": "SL"
           },
           {
             "direction": "SHORT",
-            "entry": 69647.2,
-            "exit": 71077.8,
-            "pnl_pct": -2.0541,
+            "entry": 77978.1,
+            "exit": 80514.3,
+            "pnl_pct": -3.5525,
             "reason": "SL"
           }
         ]
@@ -150,125 +321,351 @@
       "EMA": {
         "symbol": "ETH/USDT:USDT",
         "strategy": "EMA",
-        "candles_used": 500,
-        "total_trades": 6,
-        "win_rate_pct": 50.0,
-        "total_pnl_pct": 3.44,
+        "candles_used": 1000,
+        "round_trip_cost_pct": 0.3,
+        "total_trades": 21,
+        "win_rate_pct": 28.6,
+        "total_pnl_pct": -24.39,
         "best_trade": {
-          "pnl_pct": 4.5596,
+          "pnl_pct": 4.7466,
           "direction": "LONG",
           "reason": "TP"
         },
         "worst_trade": {
-          "pnl_pct": -2.028,
-          "direction": "LONG",
+          "pnl_pct": -4.148,
+          "direction": "SHORT",
           "reason": "SL"
         },
         "equity_curve": [
           1.0,
-          0.9849,
-          0.9659,
-          1.0099,
-          1.0468,
-          1.0256,
-          1.0327
+          0.9755,
+          0.9407,
+          0.9655,
+          0.9426,
+          0.9169,
+          0.8948,
+          0.9153,
+          0.9378,
+          0.964,
+          1.0098,
+          0.9814,
+          0.9555,
+          0.9782,
+          0.9529,
+          0.9303,
+          0.9044,
+          0.8669,
+          0.8415,
+          0.822,
+          0.8019,
+          0.7767
         ],
         "trades": [
           {
+            "direction": "SHORT",
+            "entry": 1858.01,
+            "exit": 1897.88,
+            "pnl_pct": -2.4458,
+            "reason": "SL"
+          },
+          {
             "direction": "LONG",
-            "entry": 2040.61,
-            "exit": 2009.84,
-            "pnl_pct": -1.5079,
+            "entry": 1956.49,
+            "exit": 1892.44,
+            "pnl_pct": -3.5737,
             "reason": "SL"
           },
           {
             "direction": "SHORT",
-            "entry": 2023.0,
-            "exit": 2062.06,
-            "pnl_pct": -1.9308,
+            "entry": 1891.45,
+            "exit": 1835.92,
+            "pnl_pct": 2.6358,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1856.14,
+            "exit": 1894.57,
+            "pnl_pct": -2.3704,
             "reason": "SL"
           },
           {
             "direction": "LONG",
-            "entry": 2039.0,
-            "exit": 2131.97,
-            "pnl_pct": 4.5596,
-            "reason": "TP"
-          },
-          {
-            "direction": "LONG",
-            "entry": 2105.03,
-            "exit": 2181.85,
-            "pnl_pct": 3.6494,
-            "reason": "TP"
-          },
-          {
-            "direction": "LONG",
-            "entry": 2150.4,
-            "exit": 2106.79,
-            "pnl_pct": -2.028,
+            "entry": 1908.57,
+            "exit": 1862.21,
+            "pnl_pct": -2.729,
             "reason": "SL"
           },
           {
             "direction": "SHORT",
-            "entry": 2112.08,
-            "exit": 2097.36,
-            "pnl_pct": 0.6969,
-            "reason": "OPEN"
+            "entry": 1865.53,
+            "exit": 1904.9,
+            "pnl_pct": -2.4104,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1886.98,
+            "exit": 1935.97,
+            "pnl_pct": 2.2962,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 2295.47,
+            "exit": 2358.67,
+            "pnl_pct": 2.4532,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 2371.22,
+            "exit": 2444.69,
+            "pnl_pct": 2.7984,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 2392.71,
+            "exit": 2513.46,
+            "pnl_pct": 4.7466,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 2439.3,
+            "exit": 2378.05,
+            "pnl_pct": -2.811,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 2412.72,
+            "exit": 2469.2,
+            "pnl_pct": -2.6409,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 2428.32,
+            "exit": 2493.29,
+            "pnl_pct": 2.3755,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 2492.36,
+            "exit": 2435.39,
+            "pnl_pct": -2.5858,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 2454.86,
+            "exit": 2505.72,
+            "pnl_pct": -2.3718,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 2490.57,
+            "exit": 2428.72,
+            "pnl_pct": -2.7834,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 2435.04,
+            "exit": 2528.74,
+            "pnl_pct": -4.148,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 2481.13,
+            "exit": 2416.0,
+            "pnl_pct": -2.925,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 2427.78,
+            "exit": 2476.79,
+            "pnl_pct": -2.3187,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 2470.91,
+            "exit": 2417.98,
+            "pnl_pct": -2.4421,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 2419.68,
+            "exit": 2488.46,
+            "pnl_pct": -3.1425,
+            "reason": "SL"
           }
         ]
       },
       "BB": {
         "symbol": "ETH/USDT:USDT",
         "strategy": "BB",
-        "candles_used": 500,
-        "total_trades": 4,
-        "win_rate_pct": 50.0,
-        "total_pnl_pct": -2.78,
+        "candles_used": 1000,
+        "round_trip_cost_pct": 0.3,
+        "total_trades": 17,
+        "win_rate_pct": 47.1,
+        "total_pnl_pct": -14.93,
         "best_trade": {
-          "pnl_pct": 3.1124,
-          "direction": "SHORT",
+          "pnl_pct": 4.4283,
+          "direction": "LONG",
           "reason": "TP"
         },
         "worst_trade": {
-          "pnl_pct": -3.5515,
+          "pnl_pct": -8.2487,
           "direction": "SHORT",
           "reason": "SL"
         },
         "equity_curve": [
           1.0,
-          0.9645,
-          0.939,
-          0.9682,
-          0.9711
+          1.0298,
+          1.0061,
+          0.9731,
+          0.9948,
+          0.97,
+          0.89,
+          0.8323,
+          0.8087,
+          0.7712,
+          0.7916,
+          0.8163,
+          0.835,
+          0.805,
+          0.831,
+          0.8119,
+          0.8478,
+          0.8505
         ],
         "trades": [
           {
+            "direction": "LONG",
+            "entry": 1852.98,
+            "exit": 1913.83,
+            "pnl_pct": 2.9839,
+            "reason": "TP"
+          },
+          {
             "direction": "SHORT",
-            "entry": 2058.85,
-            "exit": 2131.97,
-            "pnl_pct": -3.5515,
+            "entry": 1915.4,
+            "exit": 1953.73,
+            "pnl_pct": -2.3011,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1892.44,
+            "exit": 1835.92,
+            "pnl_pct": -3.2866,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1836.41,
+            "exit": 1882.84,
+            "pnl_pct": 2.2283,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1894.57,
+            "exit": 1935.97,
+            "pnl_pct": -2.4852,
             "reason": "SL"
           },
           {
             "direction": "SHORT",
-            "entry": 2125.61,
-            "exit": 2181.85,
-            "pnl_pct": -2.6458,
+            "entry": 1931.76,
+            "exit": 2085.31,
+            "pnl_pct": -8.2487,
             "reason": "SL"
           },
           {
             "direction": "SHORT",
-            "entry": 2187.37,
-            "exit": 2119.29,
-            "pnl_pct": 3.1124,
+            "entry": 2088.59,
+            "exit": 2217.85,
+            "pnl_pct": -6.4889,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 2286.14,
+            "exit": 2343.88,
+            "pnl_pct": -2.8257,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 2342.84,
+            "exit": 2444.69,
+            "pnl_pct": -4.6473,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 2513.46,
+            "exit": 2439.3,
+            "pnl_pct": 2.6505,
             "reason": "TP"
           },
           {
             "direction": "LONG",
-            "entry": 2090.97,
-            "exit": 2097.36,
-            "pnl_pct": 0.3056,
+            "entry": 2378.05,
+            "exit": 2459.26,
+            "pnl_pct": 3.115,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 2493.29,
+            "exit": 2428.72,
+            "pnl_pct": 2.2898,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 2448.19,
+            "exit": 2528.74,
+            "pnl_pct": -3.5902,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 2504.45,
+            "exit": 2416.0,
+            "pnl_pct": 3.2317,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 2447.6,
+            "exit": 2398.6,
+            "pnl_pct": -2.302,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 2376.11,
+            "exit": 2488.46,
+            "pnl_pct": 4.4283,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 2516.06,
+            "exit": 2500.45,
+            "pnl_pct": 0.3204,
             "reason": "OPEN"
           }
         ]
@@ -276,46 +673,577 @@
       "MULTI": {
         "symbol": "ETH/USDT:USDT",
         "strategy": "MULTI",
-        "candles_used": 500,
-        "total_trades": 3,
-        "win_rate_pct": 66.7,
-        "total_pnl_pct": 6.71,
+        "candles_used": 1000,
+        "round_trip_cost_pct": 0.3,
+        "total_trades": 7,
+        "win_rate_pct": 28.6,
+        "total_pnl_pct": -9.25,
         "best_trade": {
-          "pnl_pct": 4.2681,
-          "direction": "LONG",
+          "pnl_pct": 2.7387,
+          "direction": "SHORT",
           "reason": "TP"
         },
         "worst_trade": {
-          "pnl_pct": -1.6819,
+          "pnl_pct": -3.5902,
           "direction": "SHORT",
           "reason": "SL"
         },
         "equity_curve": [
           1.0,
-          0.9832,
-          1.0251,
-          1.0674
+          0.9716,
+          0.9982,
+          0.9735,
+          0.9444,
+          0.9105,
+          0.9306,
+          0.9092
         ],
         "trades": [
           {
             "direction": "SHORT",
-            "entry": 2035.77,
-            "exit": 2070.01,
-            "pnl_pct": -1.6819,
+            "entry": 1866.41,
+            "exit": 1913.83,
+            "pnl_pct": -2.8407,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1924.86,
+            "exit": 1866.37,
+            "pnl_pct": 2.7387,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1874.37,
+            "exit": 1915.13,
+            "pnl_pct": -2.4746,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1885.2,
+            "exit": 1935.97,
+            "pnl_pct": -2.9931,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 2448.19,
+            "exit": 2528.74,
+            "pnl_pct": -3.5902,
             "reason": "SL"
           },
           {
             "direction": "LONG",
-            "entry": 2044.7,
-            "exit": 2131.97,
-            "pnl_pct": 4.2681,
+            "entry": 2416.0,
+            "exit": 2476.79,
+            "pnl_pct": 2.2161,
             "reason": "TP"
           },
           {
             "direction": "LONG",
-            "entry": 2095.5,
-            "exit": 2181.85,
-            "pnl_pct": 4.1207,
+            "entry": 2447.6,
+            "exit": 2398.6,
+            "pnl_pct": -2.302,
+            "reason": "SL"
+          }
+        ]
+      }
+    },
+    "XRP/USDT:USDT": {
+      "EMA": {
+        "symbol": "XRP/USDT:USDT",
+        "strategy": "EMA",
+        "candles_used": 1000,
+        "round_trip_cost_pct": 0.3,
+        "total_trades": 28,
+        "win_rate_pct": 35.7,
+        "total_pnl_pct": -12.41,
+        "best_trade": {
+          "pnl_pct": 6.9398,
+          "direction": "LONG",
+          "reason": "TP"
+        },
+        "worst_trade": {
+          "pnl_pct": -4.1423,
+          "direction": "LONG",
+          "reason": "SL"
+        },
+        "equity_curve": [
+          1.0,
+          1.0268,
+          0.9991,
+          0.9753,
+          0.9525,
+          0.926,
+          0.9507,
+          0.9719,
+          0.9455,
+          1.0074,
+          1.0774,
+          1.0505,
+          1.0769,
+          1.0491,
+          1.0236,
+          0.9907,
+          0.9557,
+          0.9246,
+          0.9509,
+          0.9265,
+          0.9493,
+          0.9254,
+          0.9473,
+          0.9216,
+          0.8834,
+          0.8615,
+          0.8411,
+          0.8209,
+          0.8698
+        ],
+        "trades": [
+          {
+            "direction": "SHORT",
+            "entry": 1.0909,
+            "exit": 1.0584,
+            "pnl_pct": 2.6792,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1.0534,
+            "exit": 1.0786,
+            "pnl_pct": -2.6923,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1.0751,
+            "exit": 1.0527,
+            "pnl_pct": -2.3835,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1.0598,
+            "exit": 1.0814,
+            "pnl_pct": -2.3381,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1.0803,
+            "exit": 1.0534,
+            "pnl_pct": -2.79,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1.052,
+            "exit": 1.0207,
+            "pnl_pct": 2.6753,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1.0307,
+            "exit": 1.0047,
+            "pnl_pct": 2.2226,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1.0083,
+            "exit": 1.0326,
+            "pnl_pct": -2.71,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1.3096,
+            "exit": 1.3993,
+            "pnl_pct": 6.5494,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1.4448,
+            "exit": 1.5494,
+            "pnl_pct": 6.9398,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1.4845,
+            "exit": 1.4519,
+            "pnl_pct": -2.496,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1.4396,
+            "exit": 1.4801,
+            "pnl_pct": 2.5133,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1.4801,
+            "exit": 1.4464,
+            "pnl_pct": -2.5769,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1.4445,
+            "exit": 1.4753,
+            "pnl_pct": -2.4322,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1.4773,
+            "exit": 1.5204,
+            "pnl_pct": -3.2175,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1.5151,
+            "exit": 1.4661,
+            "pnl_pct": -3.5341,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1.4867,
+            "exit": 1.4428,
+            "pnl_pct": -3.2528,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1.4391,
+            "exit": 1.3938,
+            "pnl_pct": 2.8478,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1.4026,
+            "exit": 1.4344,
+            "pnl_pct": -2.5672,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1.421,
+            "exit": 1.4603,
+            "pnl_pct": 2.4657,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1.4528,
+            "exit": 1.4206,
+            "pnl_pct": -2.5164,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1.4301,
+            "exit": 1.3921,
+            "pnl_pct": 2.3572,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1.3886,
+            "exit": 1.4221,
+            "pnl_pct": -2.7125,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1.4106,
+            "exit": 1.3564,
+            "pnl_pct": -4.1423,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1.3644,
+            "exit": 1.3941,
+            "pnl_pct": -2.4768,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1.384,
+            "exit": 1.3553,
+            "pnl_pct": -2.3737,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1.3409,
+            "exit": 1.369,
+            "pnl_pct": -2.3956,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1.3644,
+            "exit": 1.4497,
+            "pnl_pct": 5.9518,
+            "reason": "TP"
+          }
+        ]
+      },
+      "BB": {
+        "symbol": "XRP/USDT:USDT",
+        "strategy": "BB",
+        "candles_used": 1000,
+        "round_trip_cost_pct": 0.3,
+        "total_trades": 21,
+        "win_rate_pct": 47.6,
+        "total_pnl_pct": -4.59,
+        "best_trade": {
+          "pnl_pct": 6.1825,
+          "direction": "SHORT",
+          "reason": "TP"
+        },
+        "worst_trade": {
+          "pnl_pct": -7.6254,
+          "direction": "SHORT",
+          "reason": "SL"
+        },
+        "equity_curve": [
+          1.0,
+          1.0257,
+          1.0008,
+          0.9744,
+          1.0008,
+          1.0563,
+          1.0185,
+          1.0421,
+          1.0128,
+          0.9821,
+          1.0428,
+          1.0711,
+          0.9894,
+          0.9634,
+          0.9886,
+          1.0125,
+          0.9835,
+          1.0079,
+          0.9842,
+          1.0083,
+          0.9459,
+          0.9417
+        ],
+        "trades": [
+          {
+            "direction": "SHORT",
+            "entry": 1.0978,
+            "exit": 1.0663,
+            "pnl_pct": 2.5694,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1.0655,
+            "exit": 1.0428,
+            "pnl_pct": -2.4305,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1.0354,
+            "exit": 1.0112,
+            "pnl_pct": -2.6373,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 0.9941,
+            "exit": 1.024,
+            "pnl_pct": 2.7077,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1.0084,
+            "exit": 1.0674,
+            "pnl_pct": 5.5509,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1.0638,
+            "exit": 1.0987,
+            "pnl_pct": -3.5807,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1.132,
+            "exit": 1.1023,
+            "pnl_pct": 2.3237,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1.1904,
+            "exit": 1.2204,
+            "pnl_pct": -2.8202,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1.2272,
+            "exit": 1.2607,
+            "pnl_pct": -3.0298,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1.3143,
+            "exit": 1.2291,
+            "pnl_pct": 6.1825,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1.3993,
+            "exit": 1.3571,
+            "pnl_pct": 2.7158,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1.5494,
+            "exit": 1.6629,
+            "pnl_pct": -7.6254,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1.4428,
+            "exit": 1.4092,
+            "pnl_pct": -2.6288,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1.3938,
+            "exit": 1.4344,
+            "pnl_pct": 2.6129,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1.4603,
+            "exit": 1.4206,
+            "pnl_pct": 2.4186,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1.3921,
+            "exit": 1.3564,
+            "pnl_pct": -2.8645,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1.3429,
+            "exit": 1.3803,
+            "pnl_pct": 2.485,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1.3623,
+            "exit": 1.3343,
+            "pnl_pct": -2.3553,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1.3192,
+            "exit": 1.3555,
+            "pnl_pct": 2.4517,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1.369,
+            "exit": 1.4497,
+            "pnl_pct": -6.1948,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1.4642,
+            "exit": 1.4663,
+            "pnl_pct": -0.4434,
+            "reason": "OPEN"
+          }
+        ]
+      },
+      "MULTI": {
+        "symbol": "XRP/USDT:USDT",
+        "strategy": "MULTI",
+        "candles_used": 1000,
+        "round_trip_cost_pct": 0.3,
+        "total_trades": 4,
+        "win_rate_pct": 50.0,
+        "total_pnl_pct": 0.76,
+        "best_trade": {
+          "pnl_pct": 2.8212,
+          "direction": "SHORT",
+          "reason": "TP"
+        },
+        "worst_trade": {
+          "pnl_pct": -2.3184,
+          "direction": "LONG",
+          "reason": "SL"
+        },
+        "equity_curve": [
+          1.0,
+          1.0257,
+          1.002,
+          0.9787,
+          1.0064
+        ],
+        "trades": [
+          {
+            "direction": "SHORT",
+            "entry": 1.0978,
+            "exit": 1.0663,
+            "pnl_pct": 2.5694,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1.0683,
+            "exit": 1.0898,
+            "pnl_pct": -2.3125,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 1.0751,
+            "exit": 1.0534,
+            "pnl_pct": -2.3184,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 1.4001,
+            "exit": 1.3564,
+            "pnl_pct": 2.8212,
             "reason": "TP"
           }
         ]
@@ -325,189 +1253,463 @@
       "EMA": {
         "symbol": "SOL/USDT:USDT",
         "strategy": "EMA",
-        "candles_used": 500,
-        "total_trades": 10,
-        "win_rate_pct": 50.0,
-        "total_pnl_pct": 5.64,
+        "candles_used": 1000,
+        "round_trip_cost_pct": 0.3,
+        "total_trades": 23,
+        "win_rate_pct": 30.4,
+        "total_pnl_pct": -24.69,
         "best_trade": {
-          "pnl_pct": 3.4978,
+          "pnl_pct": 5.0326,
           "direction": "LONG",
           "reason": "TP"
         },
         "worst_trade": {
-          "pnl_pct": -1.8629,
-          "direction": "LONG",
+          "pnl_pct": -5.0451,
+          "direction": "SHORT",
           "reason": "SL"
         },
         "equity_curve": [
           1.0,
-          1.0327,
-          1.0134,
-          0.997,
-          1.0287,
-          1.0113,
-          0.9943,
-          1.0291,
-          1.0608,
-          1.0442,
-          1.055
+          0.9764,
+          0.9533,
+          0.9267,
+          0.9534,
+          0.9307,
+          0.9092,
+          0.8863,
+          0.8657,
+          0.8435,
+          0.886,
+          0.9065,
+          0.9316,
+          0.9531,
+          0.9309,
+          0.9064,
+          0.931,
+          0.9091,
+          0.8838,
+          0.8506,
+          0.8303,
+          0.7958,
+          0.8145,
+          0.7734
         ],
         "trades": [
           {
-            "direction": "LONG",
-            "entry": 85.527,
-            "exit": 88.322,
-            "pnl_pct": 3.268,
-            "reason": "TP"
+            "direction": "SHORT",
+            "entry": 74.091,
+            "exit": 75.615,
+            "pnl_pct": -2.3569,
+            "reason": "SL"
           },
           {
             "direction": "LONG",
-            "entry": 87.821,
-            "exit": 86.185,
-            "pnl_pct": -1.8629,
+            "entry": 76.816,
+            "exit": 75.23,
+            "pnl_pct": -2.3647,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 75.914,
+            "exit": 74.023,
+            "pnl_pct": -2.791,
             "reason": "SL"
           },
           {
             "direction": "SHORT",
-            "entry": 85.496,
-            "exit": 86.882,
-            "pnl_pct": -1.6211,
+            "entry": 73.379,
+            "exit": 71.05,
+            "pnl_pct": 2.8739,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 72.616,
+            "exit": 74.121,
+            "pnl_pct": -2.3725,
             "reason": "SL"
           },
           {
             "direction": "LONG",
-            "entry": 84.925,
-            "exit": 87.625,
-            "pnl_pct": 3.1793,
-            "reason": "TP"
-          },
-          {
-            "direction": "LONG",
-            "entry": 87.209,
-            "exit": 85.737,
-            "pnl_pct": -1.6879,
+            "entry": 74.158,
+            "exit": 72.663,
+            "pnl_pct": -2.316,
             "reason": "SL"
           },
           {
             "direction": "SHORT",
-            "entry": 85.186,
-            "exit": 86.623,
-            "pnl_pct": -1.6869,
+            "entry": 73.175,
+            "exit": 74.798,
+            "pnl_pct": -2.518,
             "reason": "SL"
           },
           {
             "direction": "LONG",
-            "entry": 86.683,
-            "exit": 89.715,
-            "pnl_pct": 3.4978,
-            "reason": "TP"
-          },
-          {
-            "direction": "LONG",
-            "entry": 89.647,
-            "exit": 92.41,
-            "pnl_pct": 3.0821,
-            "reason": "TP"
-          },
-          {
-            "direction": "LONG",
-            "entry": 90.657,
-            "exit": 89.236,
-            "pnl_pct": -1.5674,
+            "entry": 75.842,
+            "exit": 74.307,
+            "pnl_pct": -2.3239,
             "reason": "SL"
           },
           {
             "direction": "SHORT",
-            "entry": 88.848,
-            "exit": 87.924,
-            "pnl_pct": 1.04,
-            "reason": "OPEN"
+            "entry": 75.061,
+            "exit": 76.759,
+            "pnl_pct": -2.5622,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 76.755,
+            "exit": 80.848,
+            "pnl_pct": 5.0326,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 87.175,
+            "exit": 89.457,
+            "pnl_pct": 2.3177,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 90.955,
+            "exit": 93.743,
+            "pnl_pct": 2.7653,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 94.309,
+            "exit": 96.776,
+            "pnl_pct": 2.3159,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 94.199,
+            "exit": 92.285,
+            "pnl_pct": -2.3319,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 92.475,
+            "exit": 94.63,
+            "pnl_pct": -2.6304,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 94.585,
+            "exit": 97.437,
+            "pnl_pct": 2.7153,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 98.572,
+            "exit": 96.54,
+            "pnl_pct": -2.3614,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 97.222,
+            "exit": 99.635,
+            "pnl_pct": -2.7819,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 106.773,
+            "exit": 103.088,
+            "pnl_pct": -3.7512,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 103.895,
+            "exit": 106.064,
+            "pnl_pct": -2.3877,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 105.755,
+            "exit": 101.682,
+            "pnl_pct": -4.1514,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 103.608,
+            "exit": 100.874,
+            "pnl_pct": 2.3388,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 100.019,
+            "exit": 104.765,
+            "pnl_pct": -5.0451,
+            "reason": "SL"
           }
         ]
       },
       "BB": {
         "symbol": "SOL/USDT:USDT",
         "strategy": "BB",
-        "candles_used": 500,
-        "total_trades": 8,
-        "win_rate_pct": 25.0,
-        "total_pnl_pct": -0.5,
+        "candles_used": 1000,
+        "round_trip_cost_pct": 0.3,
+        "total_trades": 29,
+        "win_rate_pct": 44.8,
+        "total_pnl_pct": -13.87,
         "best_trade": {
-          "pnl_pct": 5.3463,
-          "direction": "LONG",
+          "pnl_pct": 3.2355,
+          "direction": "SHORT",
           "reason": "TP"
         },
         "worst_trade": {
-          "pnl_pct": -1.7234,
-          "direction": "LONG",
+          "pnl_pct": -5.0824,
+          "direction": "SHORT",
           "reason": "SL"
         },
         "equity_curve": [
           1.0,
-          0.9845,
-          0.9684,
-          0.9517,
-          1.0026,
-          0.9865,
-          1.0162,
-          1.0005,
-          0.9925
+          0.9669,
+          0.9982,
+          0.9751,
+          0.9979,
+          0.9693,
+          0.9944,
+          0.9699,
+          0.9942,
+          1.0216,
+          0.9697,
+          0.9444,
+          0.9156,
+          0.8713,
+          0.8511,
+          0.8276,
+          0.8479,
+          0.8217,
+          0.8449,
+          0.867,
+          0.8436,
+          0.8068,
+          0.8256,
+          0.847,
+          0.8706,
+          0.8914,
+          0.8671,
+          0.89,
+          0.8598,
+          0.8594
         ],
         "trades": [
           {
             "direction": "SHORT",
-            "entry": 87.209,
-            "exit": 88.557,
-            "pnl_pct": -1.5457,
+            "entry": 74.429,
+            "exit": 76.668,
+            "pnl_pct": -3.3082,
             "reason": "SL"
           },
           {
             "direction": "SHORT",
-            "entry": 86.358,
-            "exit": 87.774,
-            "pnl_pct": -1.6397,
-            "reason": "SL"
-          },
-          {
-            "direction": "LONG",
-            "entry": 86.632,
-            "exit": 85.139,
-            "pnl_pct": -1.7234,
-            "reason": "SL"
-          },
-          {
-            "direction": "LONG",
-            "entry": 85.162,
-            "exit": 89.715,
-            "pnl_pct": 5.3463,
-            "reason": "TP"
-          },
-          {
-            "direction": "SHORT",
-            "entry": 89.935,
-            "exit": 91.381,
-            "pnl_pct": -1.6078,
-            "reason": "SL"
-          },
-          {
-            "direction": "SHORT",
-            "entry": 92.013,
-            "exit": 89.236,
-            "pnl_pct": 3.0181,
+            "entry": 76.736,
+            "exit": 74.023,
+            "pnl_pct": 3.2355,
             "reason": "TP"
           },
           {
             "direction": "LONG",
-            "entry": 88.148,
-            "exit": 86.78,
-            "pnl_pct": -1.5519,
+            "entry": 74.17,
+            "exit": 72.673,
+            "pnl_pct": -2.3183,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 72.711,
+            "exit": 74.636,
+            "pnl_pct": 2.3475,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 73.794,
+            "exit": 71.899,
+            "pnl_pct": -2.868,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 71.05,
+            "exit": 73.1,
+            "pnl_pct": 2.5853,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 73.954,
+            "exit": 75.557,
+            "pnl_pct": -2.4676,
             "reason": "SL"
           },
           {
             "direction": "SHORT",
-            "entry": 87.228,
-            "exit": 87.924,
-            "pnl_pct": -0.7979,
+            "entry": 76.457,
+            "exit": 74.307,
+            "pnl_pct": 2.512,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 74.483,
+            "exit": 76.759,
+            "pnl_pct": 2.7557,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 77.158,
+            "exit": 80.848,
+            "pnl_pct": -5.0824,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 81.804,
+            "exit": 83.692,
+            "pnl_pct": -2.608,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 86.612,
+            "exit": 88.993,
+            "pnl_pct": -3.049,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 89.243,
+            "exit": 93.292,
+            "pnl_pct": -4.8371,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 93.743,
+            "exit": 95.637,
+            "pnl_pct": -2.3204,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 96.776,
+            "exit": 99.16,
+            "pnl_pct": -2.7634,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 96.365,
+            "exit": 93.71,
+            "pnl_pct": 2.4551,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 96.256,
+            "exit": 98.936,
+            "pnl_pct": -3.0842,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 101.744,
+            "exit": 98.572,
+            "pnl_pct": 2.8176,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 95.408,
+            "exit": 98.194,
+            "pnl_pct": 2.6201,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 99.635,
+            "exit": 102.028,
+            "pnl_pct": -2.7018,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 100.544,
+            "exit": 104.63,
+            "pnl_pct": -4.3639,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 108.854,
+            "exit": 105.987,
+            "pnl_pct": 2.3338,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 103.088,
+            "exit": 106.064,
+            "pnl_pct": 2.5869,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 107.052,
+            "exit": 103.752,
+            "pnl_pct": 2.7826,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 101.682,
+            "exit": 104.421,
+            "pnl_pct": 2.3937,
+            "reason": "TP"
+          },
+          {
+            "direction": "LONG",
+            "entry": 102.018,
+            "exit": 99.546,
+            "pnl_pct": -2.7231,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 98.182,
+            "exit": 101.069,
+            "pnl_pct": 2.6405,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 101.62,
+            "exit": 104.765,
+            "pnl_pct": -3.3949,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 105.131,
+            "exit": 104.859,
+            "pnl_pct": -0.0413,
             "reason": "OPEN"
           }
         ]
@@ -515,55 +1717,80 @@
       "MULTI": {
         "symbol": "SOL/USDT:USDT",
         "strategy": "MULTI",
-        "candles_used": 500,
-        "total_trades": 4,
-        "win_rate_pct": 50.0,
-        "total_pnl_pct": 1.95,
+        "candles_used": 1000,
+        "round_trip_cost_pct": 0.3,
+        "total_trades": 7,
+        "win_rate_pct": 42.9,
+        "total_pnl_pct": -3.02,
         "best_trade": {
-          "pnl_pct": 4.8379,
-          "direction": "LONG",
+          "pnl_pct": 3.1662,
+          "direction": "SHORT",
           "reason": "TP"
         },
         "worst_trade": {
-          "pnl_pct": -1.8966,
+          "pnl_pct": -3.3082,
           "direction": "SHORT",
           "reason": "SL"
         },
         "equity_curve": [
           1.0,
-          0.981,
-          0.9657,
-          1.0124,
-          1.0182
+          0.9669,
+          0.9441,
+          0.9171,
+          0.8898,
+          0.9096,
+          0.9384,
+          0.9674
         ],
         "trades": [
           {
             "direction": "SHORT",
-            "entry": 85.994,
-            "exit": 87.625,
-            "pnl_pct": -1.8966,
-            "reason": "SL"
-          },
-          {
-            "direction": "SHORT",
-            "entry": 85.486,
-            "exit": 86.82,
-            "pnl_pct": -1.5605,
+            "entry": 74.429,
+            "exit": 76.668,
+            "pnl_pct": -3.3082,
             "reason": "SL"
           },
           {
             "direction": "LONG",
-            "entry": 85.575,
-            "exit": 89.715,
-            "pnl_pct": 4.8379,
+            "entry": 75.23,
+            "exit": 73.684,
+            "pnl_pct": -2.355,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 73.794,
+            "exit": 71.899,
+            "pnl_pct": -2.868,
+            "reason": "SL"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 73.593,
+            "exit": 75.557,
+            "pnl_pct": -2.9687,
+            "reason": "SL"
+          },
+          {
+            "direction": "LONG",
+            "entry": 75.439,
+            "exit": 77.338,
+            "pnl_pct": 2.2173,
             "reason": "TP"
           },
           {
             "direction": "SHORT",
-            "entry": 88.429,
-            "exit": 87.924,
-            "pnl_pct": 0.5711,
-            "reason": "OPEN"
+            "entry": 105.333,
+            "exit": 101.682,
+            "pnl_pct": 3.1662,
+            "reason": "TP"
+          },
+          {
+            "direction": "SHORT",
+            "entry": 104.421,
+            "exit": 100.874,
+            "pnl_pct": 3.0968,
+            "reason": "TP"
           }
         ]
       }

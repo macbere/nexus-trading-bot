@@ -32,8 +32,7 @@ def _load_from_env() -> Dict[str, Any]:
 
 def _load_from_file(path: Path = _CONFIG_FILE) -> Dict[str, Any]:
     """
-    Load config.json.  File must be chmod 600 on PythonAnywhere:
-        chmod 600 /home/macbere/trading_bot/config.json
+    Load config.json. On Unix systems, restrict it with ``chmod 600 config.json``.
     """
     if not path.exists():
         logger.debug("config.json not found – skipping file loader.")
@@ -66,7 +65,14 @@ def load_config() -> Dict[str, Any]:
 def _validate(cfg: Dict[str, Any]) -> None:
     """Raise early if critical keys are missing or still placeholder."""
     required = ["BITGET_API_KEY", "BITGET_SECRET", "BITGET_PASSWORD"]
-    placeholders = {"YOUR_API_KEY_HERE", "YOUR_SECRET_HERE", "YOUR_PASSWORD_HERE", ""}
+    placeholders = {
+        "YOUR_API_KEY_HERE",
+        "YOUR_SECRET_HERE",
+        "YOUR_PASSWORD_HERE",
+        "YOUR_PASSPHRASE_HERE",
+        "GENERATE_A_RANDOM_32_CHAR_STRING_HERE",
+        "",
+    }
 
     for key in required:
         val = cfg.get(key, "")

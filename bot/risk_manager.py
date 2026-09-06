@@ -1,5 +1,6 @@
 import math
 import logging
+from pathlib import Path
 from bot.exchange_factory import build_exchange
 
 logger = logging.getLogger(__name__)
@@ -54,15 +55,16 @@ class RiskManager:
         try:
             positions = __import__("bot.exchange_factory", fromlist=["get_positions"]).get_positions(self.config)
             for p in positions:
-                size = float(p.get('contracts', 0) or 0)
+                size = float(p.get('total', p.get('contracts', 0)) or 0)
                 if size > 0:
-                    side = p.get('side','')
+                    side = p.get('holdSide', p.get('side', ''))
                     logger.info(f"[Risk] Open position exists: {side} {size} — skipping new order")
                     return True
             return False
         except Exception as e:
             logger.warning(f"[Risk] Position check error: {e}")
-            return False
+            # An unknown position state must never permit a new order.
+            return True
 
     def _get_balance(self):
         """Fetch USDT balance including margin in use."""
@@ -92,16 +94,17 @@ class RiskManager:
                             logger.info(f"[Risk] Balance (equity): ${equity}")
                             return float(equity)
 
-            logger.warning(f"[Risk] Balance unreadable — fallback $5.59")
-            return 5.59
+            raise RuntimeError("Bitget returned no usable USDT balance")
 
         except Exception as e:
-            logger.error(f"[Risk] Balance error: {e} — fallback $5.59")
-            return 5.59
+            logger.error(f"[Risk] Balance unavailable: {e}")
+            return 0.0
 
     def _calc_qty(self, price):
         """Calculate order quantity ensuring minimum $5.50 order value."""
         balance  = self._get_balance()
+        if balance <= 0:
+            raise RuntimeError("Cannot size an order without a verified USDT balance")
         risk_usd = min(balance * self.risk_pct, self.max_pos_usd)
 
         # CRITICAL: enforce Bitget $5 minimum
@@ -187,14 +190,15 @@ class RiskManager:
             "pnl":       round(pnl, 4),
             "reason":    reason
         }
-        journal_file = "/home/macbere/trading_bot/logs/trade_journal.json"
+        journal_file = Path(__file__).resolve().parent.parent / "logs" / "trade_journal.json"
         try:
-            with open(journal_file, "r") as f:
+            journal_file.parent.mkdir(parents=True, exist_ok=True)
+            with journal_file.open("r", encoding="utf-8") as f:
                 journal = json.load(f)
-        except:
+        except (FileNotFoundError, json.JSONDecodeError):
             journal = []
         journal.append(record)
-        with open(journal_file, "w") as f:
+        with journal_file.open("w", encoding="utf-8") as f:
             json.dump(journal, f, indent=2)
         logger.info(f"[Journal] Trade logged: {direction} PnL=${pnl:.4f} reason={reason}")
         return pnl

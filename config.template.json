@@ -1,14 +1,17 @@
 {
   "_comment": [
     "SECURITY: chmod 600 this file immediately after creating it.",
-    "Command: chmod 600 /home/macbere/trading_bot/config.json",
+    "On Unix systems, restrict this file with: chmod 600 config.json",
     "NEVER commit this file to Git. It is listed in .gitignore.",
     "Environment variables override these values if both are set."
   ],
 
-  "BITGET_API_KEY":      "YOUR_API_KEY_HERE",
-  "BITGET_SECRET":       "YOUR_SECRET_HERE",
-  "BITGET_PASSWORD":     "YOUR_PASSPHRASE_HERE",
+  "BITGET_API_KEY":      "YOUR_DEMO_API_KEY",
+  "BITGET_SECRET":       "YOUR_DEMO_SECRET",
+  "BITGET_PASSWORD":     "YOUR_DEMO_PASSPHRASE",
+  "BITGET_DEMO":         "true",
+  "BOT_ALLOW_LIVE_TRADING": "false",
+  "BOT_PAPER_TRADING":   "false",
 
   "FASTAPI_SECRET_KEY":  "GENERATE_A_RANDOM_32_CHAR_STRING_HERE",
   "FASTAPI_ALLOWED_ORIGINS": "https://yourmobileapp.com,http://localhost:3000",
@@ -29,6 +32,8 @@
   "BOT_RSI_OS":          "35",
 
   "BOT_RISK_PCT":        "1.0",
+  "BOT_FEE_PCT":         "0.0",
+  "BOT_SLIPPAGE_PCT":    "0.0",
   "BOT_SL_PCT":          "0.5",
   "BOT_TP_PCT":          "1.0",
   "BOT_MAX_POS_USD":     "50.0",

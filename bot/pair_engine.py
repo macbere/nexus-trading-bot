@@ -22,14 +22,23 @@ class PairEngine:
         try:
             from bot.market_scanner import MarketScanner
             from bot.pair_trader import PairTrader
-            from bot.exchange_factory import get_positions
+            from bot.exchange_factory import get_open_orders, get_positions
 
             # Check open positions
             open_pos = get_positions(self.config)
+            open_orders = get_open_orders(self.config, fail_closed=True)
+            if open_orders is None:
+                logger.error("[Engine] Cannot verify pending orders; refusing to trade")
+                return False
             if len(open_pos) >= self.max_open:
                 logger.info(
                     f"[Engine] Max positions ({len(open_pos)}/{self.max_open}), "
                     f"skipping"
+                )
+                return False
+            if open_orders:
+                logger.info(
+                    f"[Engine] Pending orders detected ({len(open_orders)}), skipping new orders"
                 )
                 return False
 
@@ -46,6 +55,25 @@ class PairEngine:
 
             for pair in top_pairs:
                 if traded >= slots_available:
+                    break
+
+                # Re-check immediately before each order. A previous order
+                # may have filled after the initial scan-level snapshot.
+                current_positions = get_positions(self.config)
+                current_orders = get_open_orders(self.config, fail_closed=True)
+                if current_orders is None:
+                    logger.error("[Engine] Cannot recheck pending orders; refusing to trade")
+                    break
+                if current_orders:
+                    logger.info(
+                        f"[Engine] Pending order appeared ({len(current_orders)}), stopping scan"
+                    )
+                    break
+                if len(current_positions) + traded >= self.max_open:
+                    logger.info(
+                        f"[Engine] Position cap reached before {pair} "
+                        f"({len(current_positions) + traded}/{self.max_open}), skipping"
+                    )
                     break
 
                 # Skip if already in open positions

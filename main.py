@@ -1,11 +1,14 @@
 """NEXUS Trading Bot - Main Entry Point - Single Engine"""
 import os
 import time
-import json
 import logging
 import threading
+from pathlib import Path
 
 from flask import Flask, jsonify
+from bot.config_loader import load_config
+
+BASE_DIR = Path(__file__).resolve().parent
 
 logging.basicConfig(
     level=logging.INFO,
@@ -30,17 +33,26 @@ def status():
 @app.route("/positions")
 def positions():
     try:
-        import json as j
-        with open("config.json") as f:
-            cfg = j.load(f)
-        from bot.exchange_factory import build_exchange, get_positions, get_balance
+        cfg = load_config()
+        from bot.exchange_factory import (
+            build_exchange,
+            get_balance,
+            get_open_orders,
+            get_positions,
+            is_demo_mode,
+        )
         build_exchange(cfg)
         pos = get_positions(cfg)
         bal = get_balance(cfg)
+        orders = get_open_orders(cfg)
         return jsonify({
             "balance": bal,
             "positions": pos,
-            "count": len(pos)
+            "count": len(pos),
+            "open_orders": orders,
+            "open_order_count": len(orders),
+            "demo_mode": is_demo_mode(cfg),
+            "live_trading_allowed": str(cfg.get("BOT_ALLOW_LIVE_TRADING", "false")).lower() == "true",
         })
     except Exception as e:
         return jsonify({"error": str(e)})
@@ -61,8 +73,7 @@ def self_ping_loop():
 def run_bot():
     """Single bot loop - only one instance"""
     try:
-        with open("config.json", "r") as f:
-            config = json.load(f)
+        config = load_config()
         logger.info("✅ Config loaded")
 
         from bot.exchange_factory import build_exchange

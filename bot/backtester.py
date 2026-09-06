@@ -57,8 +57,13 @@ def sig_multi(closes,i,cfg):
     return("FLAT",closes[i])
 
 def run_backtest(symbol,candles,strategy,cfg):
-    tp=float(cfg.get("BOT_TARGET_ROE",20))
-    sl=float(cfg.get("BOT_SL_ROE",20))
+    # Match the live bot's percentage-based exits. Keep legacy ROE keys as a
+    # backwards-compatible fallback for older configurations.
+    tp=float(cfg.get("BOT_TP_PCT", cfg.get("BOT_TARGET_ROE", 2.0)))
+    sl=float(cfg.get("BOT_SL_PCT", cfg.get("BOT_SL_ROE", 2.0)))
+    fee_per_side=float(cfg.get("BOT_FEE_PCT", 0.0))
+    slippage_per_side=float(cfg.get("BOT_SLIPPAGE_PCT", 0.0))
+    round_trip_cost=2 * (fee_per_side + slippage_per_side)
     closes=[c["close"] for c in candles]
     fns={"EMA":sig_ema,"BB":sig_bb,"MULTI":sig_multi}
     fn=fns[strategy]
@@ -68,13 +73,16 @@ def run_backtest(symbol,candles,strategy,cfg):
         if pos:
             pnl=(p-pos["entry"])/pos["entry"]*100 if pos["dir"]=="LONG" else (pos["entry"]-p)/pos["entry"]*100
             if pnl>=tp or pnl<=-sl:
-                pos["exit"]=p;pos["pnl"]=round(pnl,4);pos["reason"]="TP" if pnl>=tp else "SL"
+                reason="TP" if pnl>=tp else "SL"
+                pnl -= round_trip_cost
+                pos["exit"]=p;pos["pnl"]=round(pnl,4);pos["reason"]=reason
                 trades.append(pos);equity.append(equity[-1]*(1+pnl/100));pos=None
             continue
         d,pr=fn(closes,i,cfg)
         if d in("LONG","SHORT"):pos={"dir":d,"entry":p,"idx":i}
     if pos:
         pnl=(closes[-1]-pos["entry"])/pos["entry"]*100 if pos["dir"]=="LONG" else (pos["entry"]-closes[-1])/pos["entry"]*100
+        pnl -= round_trip_cost
         pos["exit"]=closes[-1];pos["pnl"]=round(pnl,4);pos["reason"]="OPEN"
         trades.append(pos);equity.append(equity[-1]*(1+pnl/100))
     n=len(trades)
@@ -84,6 +92,7 @@ def run_backtest(symbol,candles,strategy,cfg):
     step=max(1,len(equity)//100)
     return{
         "symbol":symbol,"strategy":strategy,"candles_used":len(candles),
+        "round_trip_cost_pct":round(round_trip_cost,4),
         "total_trades":n,"win_rate_pct":round(len(wins)/n*100,1) if n else 0,
         "total_pnl_pct":round(sum(t["pnl"] for t in trades),2),
         "best_trade":{"pnl_pct":best["pnl"],"direction":best["dir"],"reason":best["reason"]} if best else None,

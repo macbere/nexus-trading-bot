@@ -1,18 +1,30 @@
-import sys, json, time, os, re
-sys.path.insert(0, '/home/macbere/trading_bot')
+import json
+import hmac
+import os
+import re
+import sys
+import time
+from pathlib import Path
 
 from flask import Flask, request, jsonify, send_file
 from bot.config_loader import load_config
 
+BASE_DIR = Path(__file__).resolve().parent
+LOG_DIR = BASE_DIR / "logs"
+LOG_FILE = LOG_DIR / "bot.log"
+CFG_FILE = BASE_DIR / "config.json"
+APP_FILE = BASE_DIR / "nexus_v2.html"
+
 app = Flask(__name__)
-cfg = load_config()
+try:
+    cfg = load_config()
+except EnvironmentError:
+    cfg = {}
 API_KEY  = cfg.get("FASTAPI_SECRET_KEY", "")
-LOG_FILE = "/home/macbere/trading_bot/logs/bot.log"
-CFG_FILE = "/home/macbere/trading_bot/config.json"
-APP_FILE = "/home/macbere/trading_bot/nexus_v2.html"
 
 def check_key():
-    return request.headers.get("X-API-Key") == API_KEY
+    supplied = request.headers.get("X-API-Key", "")
+    return bool(API_KEY) and hmac.compare_digest(supplied, API_KEY)
 
 def parse_log():
     result = {"running": False, "last_signal": None, "last_error": "", "tick_count": 0}
@@ -112,11 +124,20 @@ def positions():
     if not check_key():
         return jsonify({"error": "Unauthorized"}), 403
     try:
-        from bot.exchange_factory import build_exchange
-        ex     = build_exchange(cfg)
         from bot.exchange_factory import get_positions, get_balance
-        raw_pos = get_positions(cfg)
-        raw = [{"symbol":p["symbol"],"side":p["side"],"contracts":p["size"],"entryPrice":p["entry"],"markPrice":p["mark"],"unrealizedPnl":p["pnl"],"percentage":p["roe"],"initialMargin":0,"liquidationPrice":None} for p in raw_pos]
+        active_cfg = load_config()
+        raw_pos = get_positions(active_cfg)
+        raw = [{
+            "symbol": p.get("symbol", ""),
+            "side": p.get("holdSide", p.get("side", "")),
+            "contracts": p.get("total", p.get("contracts", 0)),
+            "entryPrice": p.get("openPriceAvg", p.get("entryPrice", 0)),
+            "markPrice": p.get("markPrice", 0),
+            "unrealizedPnl": p.get("unrealizedPL", p.get("pnl", 0)),
+            "percentage": p.get("ROE", p.get("percentage", 0)),
+            "initialMargin": p.get("margin", 0),
+            "liquidationPrice": p.get("liquidationPrice"),
+        } for p in raw_pos]
         result = []
         for p in raw:
             size = float(p.get("contracts", 0) or 0)
@@ -132,7 +153,7 @@ def positions():
                     "margin":      round(float(p.get("initialMargin",  0) or 0), 4),
                     "liq_price":   p.get("liquidationPrice"),
                 })
-        bal_data = get_balance(cfg)
+        bal_data = get_balance(active_cfg)
         usdt = round(bal_data.get("free", 0), 4)
         return jsonify({"positions": result, "balance": round(usdt, 4)})
     except Exception as e:
@@ -164,11 +185,9 @@ def scanner():
     if not check_key():
         return jsonify({"error": "Unauthorized"}), 403
     try:
-        import json, os
-        log_file = "/home/macbere/trading_bot/logs/bot.log"
         top_pairs, scores = [], []
-        if os.path.exists(log_file):
-            with open(log_file, "r") as f:
+        if os.path.exists(LOG_FILE):
+            with open(LOG_FILE, "r") as f:
                 lines = f.readlines()
             for line in reversed(lines):
                 if "Top pairs this hour" in line:
@@ -240,11 +259,9 @@ def analytics():
     if not check_key():
         return jsonify({"error": "Unauthorized"}), 403
     try:
-        import sys
-        sys.path.insert(0, '/home/macbere/trading_bot')
         from bot.adaptive_strategy import analyze_and_adapt
         result = analyze_and_adapt()
-        journal_file = "/home/macbere/trading_bot/logs/trade_journal.json"
+        journal_file = LOG_DIR / "trade_journal.json"
         if os.path.exists(journal_file):
             with open(journal_file, "r") as f:
                 trades = json.load(f)
@@ -260,8 +277,7 @@ def analytics():
 def manual_trade():
     if not check_key():return jsonify({"error":"Unauthorized"}),403
     try:
-        import sys,math
-        sys.path.insert(0,'/home/macbere/trading_bot')
+        import math
         from bot.exchange_factory import build_exchange
         from bot.config_loader import load_config
         data=request.get_json()
@@ -288,8 +304,6 @@ def manual_trade():
 def close_trade():
     if not check_key():return jsonify({"error":"Unauthorized"}),403
     try:
-        import sys
-        sys.path.insert(0,'/home/macbere/trading_bot')
         from bot.exchange_factory import build_exchange
         from bot.config_loader import load_config
         data=request.get_json()
@@ -322,6 +336,9 @@ def resume_bot():
     if not check_key():return jsonify({"error":"Unauthorized"}),403
     try:
         import subprocess
-        subprocess.Popen('pkill -f main.py; pkill -f watchdog; sleep 2; cd /home/macbere/trading_bot && nohup bash watchdog.sh >> logs/watchdog.log 2>&1 &', shell=True)
+        subprocess.Popen(
+            f'pkill -f main.py; pkill -f watchdog; sleep 2; cd "{BASE_DIR}" && nohup bash watchdog.sh >> logs/watchdog.log 2>&1 &',
+            shell=True,
+        )
         return jsonify({"status":"started"})
     except Exception as e:return jsonify({"error":str(e)}),500

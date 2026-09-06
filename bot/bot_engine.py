@@ -17,6 +17,11 @@ class BotState:
     tick_count: int = 0
     start_time: float = field(default_factory=time.time)
     last_error: str = ""
+    last_signal: object = None
+
+
+# Shared read-only status object for the dashboard API.
+bot_state = BotState()
 
 
 class BotEngine:
@@ -26,7 +31,7 @@ class BotEngine:
         self.pair_engine = PairEngine(self.cfg, self.exchange)
         self.poll_secs = float(self.cfg.get("BOT_POLL_SECONDS", 60))
         self._stop = False
-        self.bot_state = BotState()
+        self.bot_state = bot_state
 
         signal.signal(signal.SIGINT, self._handle_shutdown)
         signal.signal(signal.SIGTERM, self._handle_shutdown)

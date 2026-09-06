@@ -143,7 +143,8 @@ class PatternRecognizer:
         current_price = df.iloc[-1]['close']
         
         # Find significant lows
-        support_level = recent_lows.min()        distance_pct = ((current_price - support_level) / support_level) * 100
+        support_level = recent_lows.min()
+        distance_pct = ((current_price - support_level) / support_level) * 100
         
         # If price is within 2% of support
         if distance_pct < 2 and distance_pct >= 0:
@@ -192,7 +193,8 @@ class PatternRecognizer:
                 return {'detected': True, 'signal': 'BEARISH', 'strength': min(trend_strength * 100, 1)}
         
         return {'detected': False, 'signal': 'NEUTRAL', 'strength': 0}
-        def calculate_pattern_strength(self, patterns: Dict) -> float:
+
+    def calculate_pattern_strength(self, patterns: Dict) -> float:
         """Calculate overall pattern strength"""
         bullish_signals = 0
         bearish_signals = 0

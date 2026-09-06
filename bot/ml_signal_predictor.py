@@ -141,7 +141,8 @@ class MLSignalPredictor:
         total_features = 0
         
         for feature_name in features1.keys():
-            if feature_name in features2:                val1 = features1[feature_name]
+            if feature_name in features2:
+                val1 = features1[feature_name]
                 val2 = features2[feature_name]
                 
                 # Normalize comparison
@@ -190,7 +191,8 @@ class MLSignalPredictor:
         
         if score >= 75:
             return 'STRONG_BUY'
-        elif score >= 65:            return 'BUY'
+        elif score >= 65:
+            return 'BUY'
         elif score >= 35:
             return 'NEUTRAL'
         elif score >= 25:
@@ -239,7 +241,8 @@ class MLSignalPredictor:
             self.successful_patterns[pattern_id]['total_count'] += 1
             self.successful_patterns[pattern_id]['total_profit'] += profit_loss
             
-            # Update success rate            sp = self.successful_patterns[pattern_id]
+            # Update success rate
+            sp = self.successful_patterns[pattern_id]
             sp['success_rate'] = sp['success_count'] / sp['total_count']
         
         logger.info(f"[ML] Learned from {symbol}: P&L={profit_loss:.2f}, Success={is_successful}")
