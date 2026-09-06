@@ -3,9 +3,10 @@ import os
 import time
 import logging
 import threading
+import hmac
 from pathlib import Path
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from bot.config_loader import load_config
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -17,6 +18,16 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+
+
+def dashboard_authorized():
+    """Require the dashboard secret without exposing account data publicly."""
+    try:
+        expected = str(load_config().get("FASTAPI_SECRET_KEY", ""))
+    except EnvironmentError:
+        return False
+    supplied = request.headers.get("X-API-Key", "")
+    return bool(expected) and not expected.startswith("GENERATE_") and hmac.compare_digest(supplied, expected)
 
 @app.route("/ping")
 def ping():
@@ -32,6 +43,8 @@ def status():
 
 @app.route("/positions")
 def positions():
+    if not dashboard_authorized():
+        return jsonify({"error": "Unauthorized"}), 401
     try:
         cfg = load_config()
         from bot.exchange_factory import (
