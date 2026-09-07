@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 _cfg_cache = None
 _precision_cache = {}
+_contract_cache = {}
 
 
 def _as_bool(value, default=False):
@@ -500,7 +501,7 @@ def close_position_direct(cfg, symbol, hold_side, size):
         return False
 
 def _get_min_qty(symbol):
-    """Minimum order quantity per symbol - from Bitget contract specs"""
+    """Return Bitget's current minimum/step quantity for a contract."""
     KNOWN_MIN_QTY = {
         "BTCUSDT":  0.001,  "ETHUSDT":  0.01,   "SOLUSDT":  0.1,
         "BNBUSDT":  0.01,   "XRPUSDT":  1.0,    "ADAUSDT":  1.0,
@@ -518,4 +519,23 @@ def _get_min_qty(symbol):
         "KNCUSDT":  0.1,    "AAVEUSDT": 0.01,
     }
     raw = symbol.replace("/USDT:USDT","USDT").replace("/","").upper()
-    return KNOWN_MIN_QTY.get(raw, 1.0)
+
+    # Contract rules change by instrument; prefer the exchange metadata over
+    # the fallback table so orders are rejected locally when possible.
+    if raw not in _contract_cache:
+        try:
+            url = "https://api.bitget.com/api/v2/mix/market/contracts?productType=USDT-FUTURES"
+            response = requests.get(url, timeout=10).json()
+            if response.get("code") == "00000":
+                for contract in response.get("data", []):
+                    contract_symbol = str(contract.get("symbol", "")).upper()
+                    if not contract_symbol:
+                        continue
+                    minimum = float(contract.get("minTradeNum", 0) or 0)
+                    step = float(contract.get("sizeMultiplier", 0) or 0)
+                    if minimum > 0:
+                        _contract_cache[contract_symbol] = max(minimum, step)
+        except Exception as exc:
+            logger.warning("[Exchange] Contract quantity metadata unavailable: %s", exc)
+
+    return _contract_cache.get(raw, KNOWN_MIN_QTY.get(raw, 1.0))
