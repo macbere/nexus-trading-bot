@@ -176,7 +176,7 @@ def get_balance(cfg):
         return {"total": 0.0, "free": 0.0}
 
 
-def get_positions(cfg):
+def get_positions(cfg, fail_closed=False):
     try:
         path = "/api/v2/mix/position/all-position"
         params = "?productType=USDT-FUTURES&marginCoin=USDT"
@@ -185,10 +185,10 @@ def get_positions(cfg):
         data = resp.json()
         if data.get("code") == "00000":
             return [p for p in data.get("data", []) if float(p.get("total", 0)) > 0]
-        return []
+        return None if fail_closed else []
     except Exception as e:
         logger.error(f"[Exchange] Positions fetch failed: {e}")
-        return []
+        return None if fail_closed else []
 
 
 def get_open_orders(cfg, fail_closed=False):
@@ -210,6 +210,24 @@ def get_open_orders(cfg, fail_closed=False):
         return None if fail_closed else []
 
 
+def get_pending_plan_orders(cfg, fail_closed=False):
+    """Return pending TP/SL and trigger orders from Bitget."""
+    try:
+        path = "/api/v2/mix/order/orders-plan-pending"
+        params = "?productType=USDT-FUTURES&planType=profit_loss&limit=100"
+        headers = _sign_request(cfg, "GET", path + params)
+        resp = requests.get(f"https://api.bitget.com{path}{params}", headers=headers, timeout=10)
+        data = resp.json()
+        if data.get("code") == "00000":
+            payload = data.get("data") or {}
+            if isinstance(payload, list):
+                return payload
+            return payload.get("entrustedList", payload.get("list", [])) or []
+        logger.error(f"[Exchange] Pending plan orders error: {data.get('msg')}")
+        return None if fail_closed else []
+    except Exception as e:
+        logger.error(f"[Exchange] Pending plan orders fetch failed: {e}")
+        return None if fail_closed else []
 def fetch_ohlcv_direct(symbol, timeframe="1m", limit=100):
     try:
         raw = symbol.replace("/USDT:USDT", "USDT").replace("/", "")
