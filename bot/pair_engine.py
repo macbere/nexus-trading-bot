@@ -16,7 +16,37 @@ class PairEngine:
         self.config = config
         self.traders = {}
         self.max_open = int(config.get("BOT_MAX_OPEN_POSITIONS", 3))
+        self.max_daily_loss = float(config.get("BOT_MAX_DAILY_LOSS_USD", 2.0))
+        self.session_equity = None
+        self.risk_halted = False
         logger.info("[Engine] PairEngine ready")
+
+    def _loss_limit_ok(self):
+        """Stop new entries when account equity falls past the session limit."""
+        from bot.exchange_factory import get_balance
+
+        balance = get_balance(self.config)
+        equity = float(balance.get("total", 0) or 0)
+        if equity <= 0:
+            logger.error("[Engine] Cannot verify equity; refusing to trade")
+            return False
+        if self.session_equity is None:
+            self.session_equity = equity
+            logger.info(
+                f"[Risk] Session equity baseline ${self.session_equity:.4f}; "
+                f"loss limit ${self.max_daily_loss:.2f}"
+            )
+            return True
+
+        loss = self.session_equity - equity
+        if loss >= self.max_daily_loss:
+            self.risk_halted = True
+            logger.critical(
+                f"[Risk] Loss limit reached: ${loss:.4f} >= "
+                f"${self.max_daily_loss:.2f}; halting new trades"
+            )
+            return False
+        return not self.risk_halted
 
     def scan_and_trade(self):
         try:
@@ -27,6 +57,9 @@ class PairEngine:
                 get_pending_plan_orders,
                 get_positions,
             )
+
+            if not self._loss_limit_ok():
+                return False
 
             # Check open positions
             open_pos = get_positions(self.config, fail_closed=True)
