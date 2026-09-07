@@ -1,7 +1,9 @@
 import unittest
 from unittest.mock import patch
+from types import SimpleNamespace
 
 from bot.pair_engine import PairEngine
+from bot.exchange_factory import get_positions
 
 
 class PairEngineRiskTests(unittest.TestCase):
@@ -25,6 +27,25 @@ class PairEngineRiskTests(unittest.TestCase):
 
         self.assertFalse(engine._loss_limit_ok())
         self.assertIsNone(engine.session_equity)
+
+    @patch("bot.exchange_factory.requests.get")
+    def test_position_api_error_fails_closed(self, requests_get):
+        requests_get.return_value = SimpleNamespace(
+            status_code=400,
+            json=lambda: {"code": "40010", "msg": "invalid account mode"},
+        )
+
+        self.assertIsNone(
+            get_positions(
+                {
+                    "BITGET_API_KEY": "key",
+                    "BITGET_SECRET": "secret",
+                    "BITGET_PASSWORD": "pass",
+                    "BITGET_DEMO": "true",
+                },
+                fail_closed=True,
+            )
+        )
 
 
 if __name__ == "__main__":

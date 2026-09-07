@@ -210,6 +210,10 @@ def get_positions(cfg, fail_closed=False):
         data = resp.json()
         if data.get("code") == "00000":
             return [p for p in data.get("data", []) if float(p.get("total", 0)) > 0]
+        logger.error(
+            f"[Exchange] Positions error: HTTP {resp.status_code} "
+            f"code={data.get('code')} msg={data.get('msg')}"
+        )
         return None if fail_closed else []
     except Exception as e:
         logger.error(f"[Exchange] Positions fetch failed: {e}")
