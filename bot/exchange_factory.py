@@ -104,6 +104,31 @@ def _sign_request(cfg, method, path, body_str=""):
     return headers
 
 
+def _set_leverage(cfg, raw_symbol, leverage):
+    """Set conservative cross-margin leverage before opening a position."""
+    path = "/api/v2/mix/account/set-leverage"
+    body = {
+        "symbol": raw_symbol,
+        "productType": "USDT-FUTURES",
+        "marginCoin": "USDT",
+        "leverage": str(leverage),
+    }
+    body_str = json.dumps(body)
+    headers = _sign_request(cfg, "POST", path, body_str)
+    result = requests.post(
+        f"https://api.bitget.com{path}",
+        headers=headers,
+        data=body_str,
+        timeout=10,
+    ).json()
+    if result.get("code") != "00000":
+        logger.error(
+            f"[Exchange] Leverage setup failed for {raw_symbol}: {result.get('msg')}"
+        )
+        return False
+    return True
+
+
 def _get_price_decimals(symbol):
     """
     Get exact decimal places required by Bitget for TP/SL prices.
@@ -294,12 +319,27 @@ def place_order_direct(
             "?productType=USDT-FUTURES"
         )
         contracts = requests.get(contracts_url, timeout=10).json()
-        available = {str(item.get("symbol", "")).upper()
-                     for item in contracts.get("data", [])}
-        if raw_symbol not in available:
+        contract = next(
+            (item for item in contracts.get("data", [])
+             if str(item.get("symbol", "")).upper() == raw_symbol),
+            None,
+        )
+        if not contract:
             logger.warning(
                 f"[Exchange] {symbol} is not available in USDT-FUTURES; skipping"
             )
+            return None
+        if str(contract.get("symbolStatus", "normal")).lower() not in {"normal", "listed"}:
+            logger.warning(
+                f"[Exchange] {symbol} is not currently tradable "
+                f"(status={contract.get('symbolStatus')}); skipping"
+            )
+            return None
+
+        configured_leverage = float(cfg.get("BOT_LEVERAGE", 1))
+        max_leverage = float(contract.get("maxLever", configured_leverage) or configured_leverage)
+        leverage = max(1, min(configured_leverage, max_leverage))
+        if not _set_leverage(cfg, raw_symbol, leverage):
             return None
 
         # First get current price for TP/SL calculation

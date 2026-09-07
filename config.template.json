@@ -32,6 +32,7 @@
   "BOT_RSI_OS":          "35",
 
   "BOT_RISK_PCT":        "1.0",
+  "BOT_LEVERAGE":        "1",
   "BOT_FEE_PCT":         "0.0",
   "BOT_SLIPPAGE_PCT":    "0.0",
   "BOT_SL_PCT":          "0.5",

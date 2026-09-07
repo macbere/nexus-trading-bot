@@ -12,6 +12,8 @@ services:
         value: BTC/USDT:USDT
       - key: BOT_RISK_PCT
         value: "10.0"
+      - key: BOT_LEVERAGE
+        value: "1"
       - key: BOT_MAX_POS_USD
         value: "3.0"
       - key: BOT_MAX_DAILY_LOSS_USD
