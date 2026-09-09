@@ -4,6 +4,7 @@ from types import SimpleNamespace
 
 from bot.pair_engine import PairEngine
 from bot.exchange_factory import get_positions
+from bot.pair_trader import PairTrader
 
 
 class PairEngineRiskTests(unittest.TestCase):
@@ -46,6 +47,36 @@ class PairEngineRiskTests(unittest.TestCase):
                 fail_closed=True,
             )
         )
+
+    @patch("bot.exchange_factory._get_min_qty", return_value=0.1)
+    @patch("bot.exchange_factory.get_balance", return_value={"free": 100.0})
+    def test_quantity_skips_when_exchange_minimum_breaks_position_cap(
+        self, get_balance, get_min_qty
+    ):
+        trader = PairTrader(
+            "SOL/USDT:USDT",
+            {"BOT_RISK_PCT": "10", "BOT_MAX_POS_USD": "3"},
+        )
+
+        self.assertEqual(trader._calc_qty(103.706), 0)
+
+    @patch("bot.pair_trader.time.time", return_value=1000.0)
+    @patch("bot.exchange_factory.place_order_direct", return_value={"orderId": "1"})
+    @patch.object(PairTrader, "_calc_qty", return_value=1.0)
+    @patch.object(PairTrader, "_get_price", return_value=100.0)
+    def test_trade_passes_configured_exit_percentages(
+        self, get_price, calc_qty, place_order, now
+    ):
+        trader = PairTrader(
+            "BTC/USDT:USDT",
+            {"MIN_TRADE_SCORE": "20", "BOT_TP_PCT": "2.5", "BOT_SL_PCT": "1.5"},
+        )
+
+        with patch("bot.exchange_factory.fetch_ohlcv_direct", return_value=[]):
+            self.assertTrue(trader.trade_with_score(50, rsi=50))
+
+        self.assertEqual(place_order.call_args.kwargs["tp_pct"], 0.025)
+        self.assertEqual(place_order.call_args.kwargs["sl_pct"], 0.015)
 
 
 if __name__ == "__main__":

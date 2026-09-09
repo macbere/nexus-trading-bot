@@ -55,14 +55,23 @@ class PairTrader:
             risk_pct = float(self.config.get("BOT_RISK_PCT", "15.0"))
             max_usd = float(self.config.get("BOT_MAX_POS_USD", "4.0"))
             risk_usd = min(free * risk_pct / 100, max_usd)
-            if risk_usd < 6.0:
-                risk_usd = 6.0
+            if free <= 0 or risk_usd <= 0:
+                logger.warning(f"[Trader] {self.symbol} no available risk budget - skipping")
+                return 0
 
             # Get minimum lot size for this symbol
             min_qty = _get_min_qty(self.symbol)
             min_notional = min_qty * price
 
-            # If minimum order costs more than our risk budget, skip
+            # Never exceed the configured position cap just to satisfy a venue minimum.
+            if min_notional > max_usd:
+                logger.warning(
+                    f"[Trader] {self.symbol} minimum order ${min_notional:.2f} "
+                    f"exceeds position cap ${max_usd:.2f} - skipping"
+                )
+                return 0
+
+            # If minimum order consumes too much available balance, skip.
             if min_notional > free * 0.8:
                 logger.warning(
                     f"[Trader] {self.symbol} min order ${min_notional:.2f} "
@@ -75,6 +84,12 @@ class PairTrader:
             qty = max(raw_qty, min_qty)
             qty = math.ceil(qty / min_qty) * min_qty
             qty = round(qty, 6)
+            if qty * price > max_usd:
+                logger.warning(
+                    f"[Trader] {self.symbol} rounded order ${qty * price:.2f} "
+                    f"exceeds position cap ${max_usd:.2f} - skipping"
+                )
+                return 0
 
             logger.info(
                 f"[Trader] {self.symbol} | Free:{free:.2f} "
@@ -160,7 +175,14 @@ class PairTrader:
                 return False
 
             from bot.exchange_factory import place_order_direct
-            order = place_order_direct(self.config, self.symbol, direction, qty)
+            order = place_order_direct(
+                self.config,
+                self.symbol,
+                direction,
+                qty,
+                tp_pct=float(self.config.get("BOT_TP_PCT", 3.0)) / 100,
+                sl_pct=float(self.config.get("BOT_SL_PCT", 1.5)) / 100,
+            )
 
             if order:
                 self.last_trade_time = time.time()
